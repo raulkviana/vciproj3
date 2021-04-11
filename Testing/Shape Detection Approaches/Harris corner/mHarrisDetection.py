@@ -2,58 +2,109 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
+import sys, os
+import glob
+sys.path.append(os.path.abspath(os.path.join('..', 'dataset_iterator')))
+import dataset_iterator
 
-# Read Image
-filename = '4.jpg'
-img = cv.imread(filename)
-imgRe = cv.resize(img, (960, 540)) # Resize image
-cv.imshow('Original Image ',imgRe)
+windowNameConfig = 'corners'
+default_upper_value = 200
 
-#Turn to gray
-gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
-imgRe = cv.resize(gray, (960, 540)) # Resize image
-cv.imshow('Gray Image ',imgRe)
+def change_file(x):
+    pass
 
-# Blur
-blur = cv.medianBlur(gray,21)
-dst2 = cv.resize(blur, (960, 540)) # Resize image
-cv.imshow('Blur',dst2)
+def process_image(img):
 
-# Harris corner detection
-gray = np.float32(blur)
-dst = cv.cornerHarris(gray,2,3,0.04)
-dst2 = cv.resize(dst, (960, 540)) # Resize image
-cv.imshow('CornerHarris Image ',dst2)
+    # Turn to gray
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    cv.imshow('Grayscaling',gray)
 
-# Threshold
-#dst = cv.cvtColor(dst,cv.COLOR_BGR2GRAY)
-#print(cv.split(dst),end="\n")
-#ret3,dst = cv.threshold(np.float64(dst),0,255,cv.THRESH_BINARY+cv.THRESH_OTSU)
-#dst2 = cv.resize(dst, (960, 540)) # Resize image
-#cv.imshow('Threshold Image ',dst2)
+    # Equalizing
+    clahe = cv.createCLAHE(clipLimit=3.0)
+    equ = clahe.apply(gray) # Comportamento muito bom pra imagens diferentes
+    #equ = cv.equalizeHist(gray) # Ficou a quem das espectativas
+    cv.imshow('Equalizing',equ)
 
-#result is dilated for marking the corners, not important
-#dst = cv.dilate(dst,None,iterations = 3)
-#dst2 = cv.resize(dst, (960, 540)) # Resize image
-#cv.imshow('Dilate',dst2)
+    sift = cv.SIFT_create()
+    kp = sift.detect(equ, None)
+    dst = cv.drawKeypoints(equ, kp, img)
+    cv.imshow('SIFT', dst) # Heaven sent!
+
+    # Initiate FAST object with default values
+    fast = cv.FastFeatureDetector_create()
+    # find and draw the keypoints
+    kp = fast.detect(equ, None)
+    fast.setNonmaxSuppression(0)
+    cv.imshow('FAST',cv.drawKeypoints(equ, kp, None, color=(255, 0, 0)))
+
+    # Initiate FAST detector
+    star = cv.xfeatures2d.StarDetector_create()
+    # Initiate BRIEF extractor
+    brief = cv.xfeatures2d.BriefDescriptorExtractor_create()
+    # find the keypoints with STAR
+    kp = star.detect(equ, None)
+    # compute the descriptors with BRIEF
+    kp, des = brief.compute(equ, kp)
+    cv.imshow('BRIEF',cv.drawKeypoints(equ, kp, None, color=(255, 0, 0)))
 
 
+    # Blur
+    if 0 == cv.getTrackbarPos('Bluring', windowNameConfig) % 2:
+        ksizeBlur = cv.getTrackbarPos('Bluring', windowNameConfig) + 1
+    else:
+        ksizeBlur = cv.getTrackbarPos('Bluring', windowNameConfig)
+    blur = cv.GaussianBlur(equ, (ksizeBlur, ksizeBlur), 0) # Um bom valor é 10 para o kernel: 10 x 10
+    #blur = cv.medianBlur(equ, ksizeBlur) # Nao parace ser uma boa opcao
+    #blur = cv.bilateralFilter(equ, 5, ksizeBlur, ksizeBlur)
+    cv.imshow('Blur', blur)
 
-#dst  = cv.morphologyEx(dst, cv.MORPH_OPEN, np.ones((3,3),np.uint8), iterations = 1)
-#dst2 = cv.resize(dst, (960, 540)) # Resize image
-#cv.imshow('opening',dst2)
 
-dst = cv.morphologyEx(dst, cv.MORPH_CLOSE, np.ones((6,6),np.uint8), iterations = 40)
-dst2 = cv.resize(dst, (960, 540)) # Resize image
-cv.imshow('closing',dst2)
+    # Harris corner detection
+    blur = np.float32(blur)
+    dst = cv.cornerHarris(blur, 2, 3, 0.04)
+    cv.imshow('Harris',dst)
 
-# Threshold for an optimal value, it may vary depending on the image.
-print(dst.dtype)
-val = 0.0001
-img[dst>val*dst.max()]=[0,0,255] # Alterar o valor 'val' para ver resultados diferentes
+    print(dst.shape,end="\n")
 
-dst2 = cv.resize(img, (960, 540)) # Resize image
-cv.imshow('corners ',dst2)
+    # Erode
+    kernelOP = cv.getTrackbarPos('Opening Kernel', windowNameConfig)  # Bom valor is 1
+    erosion = cv.erode(dst, np.ones((kernelOP, kernelOP), np.uint8))
+    cv.imshow('Erosion', erosion)
 
-if cv.waitKey(0) & 0xff == 27:
-    cv.destroyAllWindows()
+    # Closing
+    kernelCl = cv.getTrackbarPos('Closing Kernel', windowNameConfig) # Bom valor is 7
+    close = cv.morphologyEx(erosion, cv.MORPH_CLOSE, np.ones((kernelCl, kernelCl), np.uint8))
+    cv.imshow('Closing', close)
+
+    # Threshold for an optimal value, it may vary depending on the image.
+    img[close > 0.0001 * close.max()] = [0, 0, 255]
+
+    return img
+
+
+pics = glob.glob('../dataset_iterator/dataset/' + '*.jpg')
+#Create trackbar for
+cv.namedWindow(windowNameConfig)
+cv.createTrackbar('File',windowNameConfig,0,len(pics)-1,change_file)
+cv.createTrackbar('Bluring',windowNameConfig,1,default_upper_value,change_file)
+cv.createTrackbar('Closing Kernel',windowNameConfig,1,10,change_file)
+cv.createTrackbar('Opening Kernel',windowNameConfig,1,10,change_file)
+
+while(1):
+    picPos = cv.getTrackbarPos('File', windowNameConfig)
+    filename = pics[picPos]
+
+    # Read Image
+    img = cv.imread(filename)
+
+    # Resize image
+    imgRe = dataset_iterator.resize(img, 10)
+    cv.imshow('Original Image ', imgRe)
+
+    finalIma = process_image(imgRe)
+
+    cv.imshow(windowNameConfig, finalIma)
+
+    if cv.waitKey(1) & 0xff == 27:
+        cv.destroyAllWindows()
+        break
