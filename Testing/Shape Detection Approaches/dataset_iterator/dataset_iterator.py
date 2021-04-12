@@ -18,7 +18,7 @@ def change_file():
 
 def mod_pictures(img):
     '''
-    Doesnt do nothing to the images
+    Example function
 
     :param img:
     :return:
@@ -62,6 +62,7 @@ def window_with_trackbar(wName=windowNameConfig, dir_path=directory_path, mod_pi
         if cv.waitKey(1) & 0xff == 27:
             cv.destroyAllWindows()
             break
+
 
 for file in glob.glob(directory_str + '*.jpg'):
     img = cv.imread(file)
