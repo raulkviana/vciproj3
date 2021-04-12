@@ -58,22 +58,31 @@ def process_image(img):
     #blur = cv.bilateralFilter(equ, 5, ksizeBlur, ksizeBlur)
     cv.imshow('Blur', blur)
 
+    # Adaptative Thresholding
+    blockSize = cv.getTrackbarPos('Thresholding', windowNameConfig)
+    if 0 == blockSize % 2:
+        blockSize = blockSize + 1
+    th3 = cv.adaptiveThreshold(blur, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, \
+                               cv.THRESH_BINARY_INV, blockSize, 2)
+    cv.imshow('Threshold',th3)
+
 
     # Harris corner detection
     blur = np.float32(blur)
-    dst = cv.cornerHarris(blur, 2, 3, 0.04)
+    dst = cv.cornerHarris(blur, 2, 3, 0.04) # Cria um involucro a volta da peça, enquanto com o Threshold já torna-se dificil
     cv.imshow('Harris',dst)
 
-    print(dst.shape,end="\n")
 
     # Erode
-    kernelOP = cv.getTrackbarPos('Opening Kernel', windowNameConfig)  # Bom valor is 1
-    erosion = cv.erode(dst, np.ones((kernelOP, kernelOP), np.uint8))
+    kernelOP = cv.getTrackbarPos('Erosion', windowNameConfig)  # Bom valor is 1
+    erosion = cv.erode(th3, np.ones((kernelOP, kernelOP), np.uint8))
     cv.imshow('Erosion', erosion)
 
     # Closing
     kernelCl = cv.getTrackbarPos('Closing Kernel', windowNameConfig) # Bom valor is 7
-    close = cv.morphologyEx(erosion, cv.MORPH_CLOSE, np.ones((kernelCl, kernelCl), np.uint8))
+    iterations = cv.getTrackbarPos('Closing iterations', windowNameConfig)
+
+    close = cv.morphologyEx(erosion, cv.MORPH_CLOSE, np.ones((kernelCl, kernelCl), np.uint8), iterations=iterations)
     cv.imshow('Closing', close)
 
     # Threshold for an optimal value, it may vary depending on the image.
@@ -88,7 +97,9 @@ cv.namedWindow(windowNameConfig)
 cv.createTrackbar('File',windowNameConfig,0,len(pics)-1,change_file)
 cv.createTrackbar('Bluring',windowNameConfig,1,default_upper_value,change_file)
 cv.createTrackbar('Closing Kernel',windowNameConfig,1,10,change_file)
-cv.createTrackbar('Opening Kernel',windowNameConfig,1,10,change_file)
+cv.createTrackbar('Erosion',windowNameConfig,1,10,change_file)
+cv.createTrackbar('Thresholding',windowNameConfig,2,200,change_file)
+cv.createTrackbar('Closing iterations',windowNameConfig,2,200,change_file)
 
 while(1):
     picPos = cv.getTrackbarPos('File', windowNameConfig)
