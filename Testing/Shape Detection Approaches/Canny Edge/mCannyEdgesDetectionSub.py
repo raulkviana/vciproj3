@@ -66,7 +66,7 @@ for pic in glob.glob(directory_path + '*.jpg'):
     # Contours
     contours, hierarchy = cv.findContours(bw, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     for cont in contours:
-        epsilon = 0.001 * cv.arcLength(cont, True) # 0.025 funcionou bem; 0.01 tambem; 0.005 tambem;
+        epsilon = 0.005 * cv.arcLength(cont, True) # 0.025 funcionou bem; 0.01 tambem; 0.005 tambem;
         # Approximations
         approx = cv.approxPolyDP(cont, epsilon, True)
         area = cv.contourArea(approx)
