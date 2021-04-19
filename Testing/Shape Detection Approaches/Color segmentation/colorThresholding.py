@@ -40,7 +40,7 @@ while (1):
     vl = cv.getTrackbarPos('Vlower', 'windowNameConfig')
 
     # define range of blue color in HSV
-    lower_blue = np.array([hl,sl,vl]) # 0,155,0 EXELENTE com tracbar     #    0, 75, 2 bom para  lego       # 0,0,140 são bons valores, para detetar o background
+    lower_blue = np.array([0,155,0]) # 0,155,0 EXELENTE com tracbar     #    0, 75, 2 bom para  lego       # 0,0,140 são bons valores, para detetar o background
     upper_blue = np.array([179, 255, 255]) # 179, 255, 255 EXELENTE com tracbar  #      179, 255, 255 bom paralego    #179, 85 , 255 são bons valores, para detetar o background
     # Threshold the HSV image to get only blue colors
     mask = cv.inRange(hsv, lower_blue, upper_blue)
