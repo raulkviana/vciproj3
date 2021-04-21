@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 def damkam(x):
     pass
 # Take each frame
-frame = cv.imread('photo2.jpeg')
+frame = cv.imread('im2.jpg')
 
 # COLOR EQUALIZATION
 img_yuv = cv.cvtColor(frame, cv.COLOR_BGR2YUV)
@@ -20,7 +20,7 @@ img_yuv[:,:,0] = cv.equalizeHist(img_yuv[:,:,0])
 img_output = cv.cvtColor(img_yuv, cv.COLOR_YUV2BGR)
 
 # Convert BGR to HSV
-hsv = cv.cvtColor(img_output, cv.COLOR_BGR2HSV)
+hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
 cv.namedWindow('windowNameConfig')
 cv.createTrackbar('Hupper','windowNameConfig',0,179,damkam)
@@ -40,14 +40,14 @@ while (1):
     vl = cv.getTrackbarPos('Vlower', 'windowNameConfig')
 
     # define range of blue color in HSV
-    lower_blue = np.array([0,155,0]) # 0,155,0 EXELENTE com tracbar     #    0, 75, 2 bom para  lego       # 0,0,140 são bons valores, para detetar o background
-    upper_blue = np.array([179, 255, 255]) # 179, 255, 255 EXELENTE com tracbar  #      179, 255, 255 bom paralego    #179, 85 , 255 são bons valores, para detetar o background
+    lower = np.array([hl,sl,vl]) # 0,155,0 EXELENTE com tracbar     #    0, 75, 2 bom para  lego       # 0,0,140 são bons valores, para detetar o background
+    upper = np.array([h, s, v]) # 179, 255, 255 EXELENTE com tracbar  #      179, 255, 255 bom paralego    #179, 85 , 255 são bons valores, para detetar o background
     # Threshold the HSV image to get only blue colors
-    mask = cv.inRange(hsv, lower_blue, upper_blue)
+    mask = cv.inRange(hsv, lower, upper)
     # Bitwise-AND mask and original image
-    res = cv.bitwise_and(img_output, img_output, mask=mask)
+    res = cv.bitwise_and(frame, frame, mask=mask)
 
-    cv.imshow('frame', dataset_iterator.resize(img_output,10))
+    cv.imshow('frame', dataset_iterator.resize(frame,10))
     cv.imshow('mask', dataset_iterator.resize(mask,10))
     cv.imshow('res', dataset_iterator.resize(res,10))
 
