@@ -1,0 +1,14 @@
+{
+    "colors":[
+        {
+            "color": "olive green",
+            "hsv_low": [14,91,109],
+            "hsv_upper":[38,247,232]
+        },
+       {
+           "color": "red",
+           "hsv_low": [0,0,0],
+           "hsv_upper":[4,255,255]
+       }
+    ]
+}
