@@ -1,10 +1,10 @@
 import glob
 import cv2 as cv
 
-directory_str = 'dataset/'
+directory_str = 'rect/'
 scale_percent = 20
 windowNameConfig = 'Input'
-directory_path = '../dataset_iterator/dataset/'
+directory_path = '/home/alegria/VCI/OPENCV_COURSE/vciproj3/dataset2/rect/'
 
 def resize(img,s=scale_percent):
     width = int(img.shape[1] * s / 100)
