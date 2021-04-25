@@ -15,47 +15,49 @@ def process_image(img):
     cv.imshow('Equalizing',equ)
 
     #Blur
-    blur = cv.GaussianBlur(equ,(3, 3), 0)
+    blur = cv.GaussianBlur(equ,(7, 7), 0)
     cv.imshow('Blur',blur)
 
     #Canny edge
     edges = cv.Canny(blur,10,30)
     cv.imshow('edges',edges)
 
-    #Foreground:
-    backSub = cv.createBackgroundSubtractorKNN()
-    fg = backSub.apply(img)
-    cv.imshow('Foreground',fg)
+    #Thresholding
+    #ret,bw = cv.threshold(edges,250,255,cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
+    # bw = cv.adaptiveThreshold(edges,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY,31,2)
+    # cv.imshow('Thresholding',bw)
 
-    return fg
+    # Open: eliminar o ruido
+    bw = cv.morphologyEx(edges, cv.MORPH_OPEN, np.ones((1,2)), iterations = 1)
+    cv.imshow('Opening',bw)
 
-    # #Thresholding
-    # #ret,bw = cv.threshold(edges,250,255,cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
-    # bw = cv.adaptiveThreshold(edges,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV,31,2)
-    #
-    # # Close: para obter as formas como deve ser
-    # bw = cv.morphologyEx(bw, cv.MORPH_CLOSE, np.ones((15,15)), iterations = 9)
-    #
-    # #Erode
-    # bw = cv.erode(bw,np.ones((15,15),np.uint8),iterations = 1)
-    #
-    # # Contours
-    # contours, hierarchy = cv.findContours(bw, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    # Open: eliminar o ruido
+    bw = cv.dilate(bw, np.ones((3, 3), np.uint8), iterations=1)
+    cv.imshow('Dilate',bw)
 
-    # for cont in contours:
-    #     epsilon = 0.1 * cv.arcLength(cont, True)
-    #     # Two Approximations
-    #     approx = cv.approxPolyDP(cont, epsilon, True)
-    #
-    #     if len(approx) == 4:
-    #         x, y, w, h = cv.boundingRect(cont)
-    #
-    #         #Eliminate small errors
-    #         if w>50 and h>50:
-    #             print(x, y, w, h, end='\n', sep=' ')
-    #             cv.rectangle(img3,(x,y),(x+w,y+h),(0,255,0),5)
-    #
-    #     else:
-    #         cv.drawContours(img3, cont, -1, (255, 0, 0), 1)
+    # Close: para obter as formas como deve ser
+    bw = cv.morphologyEx(bw, cv.MORPH_CLOSE, np.ones((3,3)), iterations = 1)
+    cv.imshow('Close',bw)
+
+
+    # Contours
+    contours, hierarchy = cv.findContours(bw, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+
+    for cont in contours:
+        epsilon = 0.1 * cv.arcLength(cont, True)
+        # Two Approximations
+        approx = cv.approxPolyDP(cont, epsilon, True)
+
+        if len(approx) == 4:
+            x, y, w, h = cv.boundingRect(cont)
+
+            #Eliminate small errors
+            if w>50 and h>50:
+                print(x, y, w, h, end='\n', sep=' ')
+                cv.rectangle(img,(x,y),(x+w,y+h),(0,255,0),5)
+        else:
+            cv.drawContours(img, cont, -1, (255, 0, 0), 1)
+
+    return img
 
 dataset_iterator.window_with_trackbar('Window',mod_pics_funct = process_image, scale_per = 10)

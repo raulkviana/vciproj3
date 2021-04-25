@@ -47,7 +47,7 @@ def rgb_to_hsv(r, g, b):
     return np.array([h/2, s, v])
 
 
-img = cv.imread('im2.jpg')
+img = cv.imread('im4.jpg')
 
 # Preprocessing pipeline
 
@@ -113,19 +113,22 @@ markers = markers+1
 # Now, mark the region of unknown with zero
 markers[unknown==255] = 0 # Por a border a 0, de forma a que o algoritmo a entenda como um area em que não se tem a certeza/desconhecida
 
+print(markers)
+
 markers = cv.watershed(imgRe,markers)
+
+print(markers[positions])
+
 #print(imgRe[markers>1])
 # print(imgRe)
 imgRe2 = imgRe.copy()
 positions = np.add(markers > 1,  markers == -1) # posicaos das peças completas, incluindo as bordas
+print(markers[positions])
 imgRe2[markers > 1] = [0,255,0] # As bordas são representadas por -1 e o foregorund é maior que 1, e o backgorund é 1
 imgReNew = imgRe.copy()[markers > 1]
 
 cv.imshow("Random", imgRe)
 cv.imshow("Final", imgRe2)
-
-
-
 
 # Get max color
 maxColor = np.array([imgReNew.max(0)[0], imgReNew.max(0)[1], imgReNew.max(0)[2]]) # In RGB
