@@ -47,7 +47,6 @@ def process_image(img):
     kp, des = brief.compute(equ, kp)
     cv.imshow('BRIEF',cv.drawKeypoints(equ, kp, None, color=(255, 0, 0)))
 
-
     # Blur
     if 0 == cv.getTrackbarPos('Bluring', windowNameConfig) % 2:
         ksizeBlur = cv.getTrackbarPos('Bluring', windowNameConfig) + 1
@@ -58,13 +57,10 @@ def process_image(img):
     #blur = cv.bilateralFilter(equ, 5, ksizeBlur, ksizeBlur)
     cv.imshow('Blur', blur)
 
-
     # Harris corner detection
     blur = np.float32(blur)
     dst = cv.cornerHarris(blur, 2, 3, 0.04)
     cv.imshow('Harris',dst)
-
-    print(dst.shape,end="\n")
 
     # Erode
     kernelOP = cv.getTrackbarPos('Opening Kernel', windowNameConfig)  # Bom valor is 1
@@ -77,13 +73,14 @@ def process_image(img):
     cv.imshow('Closing', close)
 
     # Threshold for an optimal value, it may vary depending on the image.
-    img[close > 0.0001 * close.max()] = [0, 0, 255]
+    const = 0.0001 # Constant to get the minimum value for Thresholding
+    img[close > const * close.max()] = [0, 0, 255]
 
     return img
 
-
 pics = glob.glob('../dataset_iterator/dataset/' + '*.jpg')
-#Create trackbar for
+
+#Create trackbar for iterating and changing algorithm parameters
 cv.namedWindow(windowNameConfig)
 cv.createTrackbar('File',windowNameConfig,0,len(pics)-1,change_file)
 cv.createTrackbar('Bluring',windowNameConfig,1,default_upper_value,change_file)
