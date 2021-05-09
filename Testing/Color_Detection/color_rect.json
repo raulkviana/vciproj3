@@ -1,0 +1,24 @@
+{
+     "colors":[
+        {
+            "color": "red",
+            "hsv_low": [0,64,0],
+            "hsv_upper":[5,225,255]
+        },
+        {
+            "color": "blue",
+            "hsv_low": [97,75,162],
+            "hsv_upper":[160,225,255]
+        },
+        {
+            "color": "olive green",
+            "hsv_low": [26,219,128],
+            "hsv_upper":[41,225,210]
+        },
+        {
+            "color": "black",
+            "hsv_low": [36,14,0],
+            "hsv_upper":[129,126,45]
+        }
+     ]
+ }
