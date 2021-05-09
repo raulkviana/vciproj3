@@ -1,12 +1,26 @@
-#finding hsv range of target object(pen)
+"""@package color trackbar program
+Documentation for this module.
+
+This program as the objective of identifying colors(HSV) in an image using trackbars and the mouse coursor.
+"""
 import cv2 as cv
 import numpy as np
 import time
-# A required callback method that goes into the trackbar function.
+
+
 def nothing(x):
+    """
+    A required callback method that goes into the trackbar function.
+    """
     pass
 
 def resize(img,fx,fy):
+    """
+    resize function
+    @param [in]
+    @param [in]
+    @param [out]
+    """
     height, width = img.shape[:2]
     size = (int(width * fx), int(height * fy))  # bgr
     img = cv.resize(img, size)
@@ -14,6 +28,15 @@ def resize(img,fx,fy):
     return img
 
 def getposHsv(event,x,y,flags,param):
+    """
+    function to transform the event from the mouse into a variation in the image and trackbar. 
+    The variation is [-10,+10] from the original value.
+    @param [in] event
+    @param [in] x : x value returned from the mouse click
+    @param [in] y : y value returned from the mouse click
+    @param [in] param
+    """
+
     global hsv_ret,color_h,color_s,color_v 
     global l_h,u_h,l_v,u_v,u_s,l_s
     
@@ -39,7 +62,7 @@ def getposHsv(event,x,y,flags,param):
 
 
 # import the image
-frame = cv.imread("/home/alegria/VCI/OPENCV_COURSE/vciproj3/dataset2/rect/IMG_20210412_173340.jpg")
+frame = cv.imread("/home/alegria/VCI/OPENCV_COURSE/vciproj3/dataset2/rect/IMG_20210412_173344.jpg")
 
 # resize function
 frame = resize(frame,0.2,0.2)
@@ -63,6 +86,7 @@ cv.setMouseCallback("Trackbars",getposHsv)
 
 while True:
 
+    # Convert the BGR image to HSV image.
     hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
     # Get the new values of the trackbar in real time as the user changes 
@@ -129,5 +153,4 @@ while True:
 
         
     
-# Release the camera & destroy the windows.    
 cv.destroyAllWindows()
