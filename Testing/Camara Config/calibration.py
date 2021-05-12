@@ -2,6 +2,7 @@
 import numpy as np
 import cv2 as cv
 import glob
+
 # termination criteria
 rows = 8
 columns = 6
@@ -18,8 +19,6 @@ cam = cv.VideoCapture(0)
 counter = 0
 while(True):
     ret, frame = cam.read()
-    #cv.imshow("showing",frame)
-    cv.waitKey(2)
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     # Find the chess board corners
     ret, corners = cv.findChessboardCorners(gray, (rows,columns), None)
@@ -27,22 +26,42 @@ while(True):
 
     # If found, add object points, image points (after refining them)
     if ret == True:
-        print("Hello!!!")
         objpoints.append(objp)
         corners2 = cv.cornerSubPix(gray,corners, (11,11), (-1,-1), criteria)
         imgpoints.append(corners)
         # Draw and display the corners
         cv.drawChessboardCorners(frame, (rows,columns), corners2, ret)
-        cv.imshow('img'+str(counter), frame)
-        cv.waitKey(5)
+        cv.imwrite("img"+str(counter)+".png",frame)
         counter = counter + 1
-        
-    if counter ==15:
+
+    
+    cv.waitKey(1000)
+    cv.imshow("showing",frame)
+    
+    if counter == 25:
         break
 
 ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
-print(ret,mtx,dist,rvecs,tvecs)
-if(cv.waitKey(0) == ord('s')):
+print("Distortion coeficients: ",str(dist))
+print("Rotation vector: ",str(rvecs))
+print("Translation vector: ",str(tvecs))
+print("Intrinsic parameters: ",str(mtx))
 
-    cv.destroyAllWindows()
+# print to file
+print("Saving in a file")
+from tempfile import TemporaryFile
+outfile = open('camera.npz','w')
+np.savez('camera.npz', intrinsics=mtx, distortion=dist, rotation=rvecs, translation=tvecs)
+
+
+# Re-projection error
+mean_error = 0
+for i in range(len(objpoints)):
+    imgpoints2, _ = cv.projectPoints(objpoints[i], rvecs[i], tvecs[i], mtx, dist)
+    error = cv.norm(imgpoints[i], imgpoints2, cv.NORM_L2)/len(imgpoints2)
+    mean_error += error
+print( "total error: {}".format(mean_error/len(objpoints)) )
+
+
+cv.destroyAllWindows()
