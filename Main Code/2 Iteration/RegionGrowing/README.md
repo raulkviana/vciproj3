@@ -8,4 +8,3 @@ Instructions:
 4. If you want ro reset the program press 'r'
 5. You can iterate through the dataset by pressing the 'n' key and try the algorithm with new images by following the previous steps
 6. If you press the 'q' key the program ends.
-7. 
