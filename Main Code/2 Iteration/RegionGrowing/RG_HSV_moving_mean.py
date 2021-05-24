@@ -99,7 +99,7 @@ def nothing(x):
 def main():
     """ local variables"""
     scale_percent = 20
-    dir_str = '../dataset2/'
+    dir_str = '../dataset2/rect/'
     default_thresh = 50
     """ create an iterator for the dataset """
     lst_img = glob.glob(dir_str + '*.jpg')
