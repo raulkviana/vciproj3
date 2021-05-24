@@ -98,16 +98,19 @@ def nothing(x):
 
 def main():
     """ local variables"""
-    # file_name = 'color_test.png'
     scale_percent = 20
-    dir_str = '../dataset2/rect/'
+    dir_str = '../dataset2/'
     default_thresh = 50
     """ create an iterator for the dataset """
     lst_img = glob.glob(dir_str + '*.jpg')
     img_iter = iter(lst_img)
     img = read_img(next(img_iter), scale_percent)
+    """ UNCOMMENT LINES ABOVE TO TEST A SPECIFIC IMAGE """
+    #scale_percent
+    #filename = "../dataset2/yellow.png"
+    #img = read_img(filename, scale_percent)
     height, width, _ = img.shape
-    """ display dataset's first image """
+    """ DISPLAY DATASET'S FIRST IMAGE """
     cv.imshow('Original', img)
     cv.createTrackbar('threshold', 'Original', default_thresh, 255, nothing)
     cv.imshow('Region Growing', img)
@@ -179,7 +182,7 @@ def main():
             old_mask = np.copy(mask)
 
         " save current min and max HSV values to dictionary "
-        if k == ord('s') and min_max_hsv:
+        if k == ord('s') and min_max_hsv.any():
             yn = input("Add current min_max_HSV to dict? (y/n): ")
             if yn == 'y':
                 hsv.update_dict(dict_hsv, min_max_hsv)

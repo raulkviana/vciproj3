@@ -1,5 +1,5 @@
+import numpy as np
 from statistics import mean
-
 
 def sum_abs_diffs(hsv1, hsv2):
     """
@@ -34,15 +34,15 @@ def update_hsv_min_max(lst_new_hsv, hsv_min_max):
 
     @returns hsv_min_max : list with 2 lists with the updated min and max HSV values
     """
+    new_hsv_min_max = np.copy(hsv_min_max)
     for hsv_val in lst_new_hsv:
+        for i in range(3):
+            if hsv_val[i] < new_hsv_min_max[0][i]:
+                new_hsv_min_max[0][i] = hsv_val[i]
+            if hsv_val[i] > new_hsv_min_max[1][i]:
+                new_hsv_min_max[1][i] = hsv_val[i]
 
-        if sum_diffs(hsv_val, hsv_min_max[0]) < 0:
-            hsv_min_max[0] = hsv_val
-
-        if sum_diffs(hsv_val, hsv_min_max[1]) > 0:
-            hsv_min_max[1] = hsv_val
-
-    return hsv_min_max
+    return new_hsv_min_max
 
 
 def update_hsv_ref(lst_new_hsv, ref_hsv):
@@ -60,7 +60,7 @@ def update_hsv_ref(lst_new_hsv, ref_hsv):
     return ref_hsv
 
 
-def update_dict(dict_hsv, new_min_max_hsv):
+def update_dict(dict_hsv, min_max_hsv):
     """
     function to add new colors or update the dictionary's min and max HSV values
 
@@ -73,16 +73,10 @@ def update_dict(dict_hsv, new_min_max_hsv):
     color_name = input("Color name: ")
     if color_name in dict_hsv:
         """ update min HSV value """
-        if sum_diffs(new_min_max_hsv[0], dict_hsv[color_name][0]) < 0:
-            dict_hsv[color_name][0] = new_min_max_hsv[0].tolist()
-            print("{color} HSV min value updated!".format(color=color_name))
-
-        """ update max HSV value """
-        if sum_diffs(new_min_max_hsv[1], dict_hsv[color_name][1]) > 0:
-            dict_hsv[color_name][1] = new_min_max_hsv[1].tolist()
-            print("{color} HSV max value updated!".format(color=color_name))
+        new_min_max_hsv = update_hsv_min_max([hsv_val.tolist() for hsv_val in min_max_hsv], dict_hsv[color_name])
+        dict_hsv[color_name] = new_min_max_hsv.tolist()
 
     else:
         """ convert list of np.arrays to list of lists and add it to the colors dictionary"""
-        dict_hsv[color_name] = [hsv_val.tolist() for hsv_val in new_min_max_hsv]
+        dict_hsv[color_name] = [hsv_val.tolist() for hsv_val in min_max_hsv]
         print("Added {color} color to dictionary!".format(color=color_name))
