@@ -47,7 +47,7 @@ def rgb_to_hsv(r, g, b):
     return np.array([h/2, s, v])
 
 
-img = cv.imread('im4.jpg')
+img = cv.imread('test2.jpg')
 
 # Preprocessing pipeline
 
@@ -117,7 +117,6 @@ print(markers)
 
 markers = cv.watershed(imgRe,markers)
 
-print(markers[positions])
 
 #print(imgRe[markers>1])
 # print(imgRe)
