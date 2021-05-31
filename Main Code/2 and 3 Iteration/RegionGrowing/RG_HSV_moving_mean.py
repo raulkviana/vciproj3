@@ -1,7 +1,9 @@
 import cv2 as cv
 import numpy as np
-from statistics import mean
 import glob
+import pprint
+import hsv
+import json
 
 """ Global Variables """
 mouse_yx = []
@@ -21,53 +23,6 @@ def on_mouse(event, x, y, flags, params):
     if event == cv.EVENT_LBUTTONDOWN:
         print('(x,y) = ({},{})'.format(x, y))
         mouse_yx.append((y, x))
-
-
-def sum_abs_diffs(hsv1, hsv2):
-    """
-    function to compute the sum of absolute differences between 2 HSV values
-
-    @param hsv1 : numpy array with the HSV values
-    @param hsv2 : numpy array with the HSV values
-
-    @returns : sum of absolute differences between 2 HSV values
-    """
-    return abs(int(hsv1[0]) - int(hsv2[0])) + abs(int(hsv1[1]) - int(hsv2[1])) + abs(int(hsv1[2]) - int(hsv2[2]))
-
-
-def sum_diffs(hsv1, hsv2):
-    """
-    function to compute the sum of differences between 2 HSV values
-
-    @param hsv1 : numpy array with the HSV values
-    @param hsv2 : numpy array with the HSV values
-
-    @returns : sum of differences between 2 HSV values
-    """
-    return (int(hsv1[0]) - int(hsv2[0])) + (int(hsv1[1]) - int(hsv2[1])) + (int(hsv1[2]) - int(hsv2[2]))
-
-
-def update_hsv_values(ref_hsv, lst_new_hsv, hsv_min_max):
-    """
-    function to update the min and max HSV values and the HSV reference value for the Region Growing
-
-    @param ref_hsv : list with the HSV reference value
-    @param lst_new_hsv : list of lists with the HSV values of the new added pixels
-    @param hsv_min_max : list with 2 lists containing the current min and max HSV values
-
-    @returns ref_hsv : list with the updated HSV reference value
-    @returns hsv_min_max : list with 2 lists with the updated min and max HSV values
-    """
-    for hsv in lst_new_hsv:
-        if sum_diffs(hsv, hsv_min_max[0]) < 0:
-            hsv_min_max[0] = hsv
-        else:
-            hsv_min_max[1] = hsv
-
-    for i in range(3):
-        ref_hsv[i] = int((mean([int(val[i]) for val in lst_new_hsv]) + ref_hsv[i]) / 2)
-
-    return ref_hsv, hsv_min_max
 
 
 def region_growing4_hsv(img, init_seed, threshold):
@@ -115,7 +70,7 @@ def region_growing4_hsv(img, init_seed, threshold):
                 if check_inside:
                     new_hsv = img[new_pix][:]
                     """ condition to check if new pix meets the threshold """
-                    thresh_condition = sum_abs_diffs(ref_hsv, new_hsv) < threshold
+                    thresh_condition = hsv.sum_abs_diffs(ref_hsv, new_hsv) < threshold
                     """ check if new pixel already belongs to the region """
                     pixel_belongs = np.all(np.equal(matrix[new_pix][:], region))
                     if thresh_condition and not pixel_belongs:
@@ -126,8 +81,10 @@ def region_growing4_hsv(img, init_seed, threshold):
             stack.remove(pix)
             """ update the HSV values only if new pixels were added """
             if lst_new_hsv:
-                ref_hsv, min_max_hsv = update_hsv_values(ref_hsv, lst_new_hsv, min_max_hsv)
-            """ stop condition """
+                ref_hsv = hsv.update_hsv_ref(lst_new_hsv, ref_hsv)
+                min_max_hsv = hsv.update_hsv_min_max(lst_new_hsv, min_max_hsv)
+
+            """ stop condition to avoid the algorithm to diverge """
             if it > max_it:
                 break
 
@@ -141,16 +98,19 @@ def nothing(x):
 
 def main():
     """ local variables"""
-    # file_name = 'color_test.png'
-    scale_percent = 40
+    scale_percent = 20
     dir_str = '../dataset2/rect/'
     default_thresh = 50
     """ create an iterator for the dataset """
     lst_img = glob.glob(dir_str + '*.jpg')
     img_iter = iter(lst_img)
     img = read_img(next(img_iter), scale_percent)
+    """ UNCOMMENT LINES ABOVE TO TEST A SPECIFIC IMAGE """
+    #scale_percent
+    #filename = "../dataset2/yellow.png"
+    #img = read_img(filename, scale_percent)
     height, width, _ = img.shape
-    """ display the dataset's first image """
+    """ DISPLAY DATASET'S FIRST IMAGE """
     cv.imshow('Original', img)
     cv.createTrackbar('threshold', 'Original', default_thresh, 255, nothing)
     cv.imshow('Region Growing', img)
@@ -158,6 +118,8 @@ def main():
     img_hsv = cv.cvtColor(img, cv.COLOR_RGB2HSV)
 
     mask = old_mask = None
+    min_max_hsv = None
+    dict_hsv = {}
     while True:
         cv.setMouseCallback('Original', on_mouse, 0, )
 
@@ -180,8 +142,9 @@ def main():
             height, width, _ = img.shape
             img_hsv = cv.cvtColor(img, cv.COLOR_RGB2HSV)
             cv.imshow('Original', img)
-            cv.createTrackbar('threshold', 'Original', default_thresh, 255, nothing)
             cv.imshow('Region Growing', img)
+            cv.createTrackbar('threshold', 'Original', default_thresh, 255, nothing)
+            """ reset mask"""
             mask = old_mask = np.zeros([height, width, 3], np.uint8)
 
         """ resets image """
@@ -189,19 +152,19 @@ def main():
             """ destroy previous images """
             cv.destroyWindow('Original')
             cv.destroyWindow('Region Growing')
-            """ display the same image """
+            """ display the same images """
             cv.imshow('Original', img)
-            cv.createTrackbar('threshold', 'Original', default_thresh, 255, nothing)
             cv.imshow('Region Growing', img)
-            """ reset masks """
+            cv.createTrackbar('threshold', 'Original', default_thresh, 255, nothing)
+            """ reset mask """
             mask = old_mask = np.zeros([height, width, 3], np.uint8)
 
         """ region growing """
         if k == ord('g') and mouse_yx:
             """ use the position of the last click as the seed"""
             seed = mouse_yx[-1]
-
-            threshold = cv.getTrackbarPos('threshold', 'Original')  # 50 not bad
+            threshold = cv.getTrackbarPos('threshold', 'Original')  # 50 shows a good performance overall
+            print("\n----------- NEW ITERATION ----------- \n")
             new_mask, min_max_hsv = region_growing4_hsv(img_hsv, seed, threshold)
             if mask is None:
                 mask = new_mask
@@ -211,12 +174,32 @@ def main():
             img_region_growing_hsv = np.bitwise_and(img_hsv, np.invert(mask))
 
             print("min HSV: {}\tmax HSV: {}".format(min_max_hsv[0], min_max_hsv[1]))
-            """ display region growing """
+            """ display region growing and highlight the seed location """
             img_region_growing_bgr = cv.cvtColor(img_region_growing_hsv, cv.COLOR_HSV2RGB)
             cv.circle(img_region_growing_bgr, (seed[1], seed[0]), 3, (170, 90, 200), 3)
             cv.imshow('Region Growing', img_region_growing_bgr)
             """ save the last mask to allow mask overlapping """
             old_mask = np.copy(mask)
+
+        " save current min and max HSV values to dictionary "
+        if k == ord('s') and min_max_hsv.any():
+            yn = input("Add current min_max_HSV to dict? (y/n): ")
+            if yn == 'y':
+                hsv.update_dict(dict_hsv, min_max_hsv)
+
+        """ print current dictionary """
+        if k == ord('p') and dict_hsv:
+            print(pprint.pformat(dict_hsv))
+
+        """ write dictionary to a JSON file """
+        if k == ord('w'):
+            if dict_hsv:
+                hsv_json = json.dumps(dict_hsv)
+                json_file_name = input("file name (without extension): ")
+                with open(json_file_name + ".txt", mode='w') as json_file:
+                    json.dump(hsv_json, json_file, indent=4)
+            else:
+                print("Empty dictionary, add more colors!")
 
     cv.destroyAllWindows()
 
