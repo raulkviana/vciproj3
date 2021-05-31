@@ -13,7 +13,7 @@ class lego:
         Returns the coordinates of the corners
         '''
         if self.rect:
-            x,y,w,h = cv.boundingBox(self.approx)
+            x,y,w,h = cv.boundingBox(self.contour)
             top_right_corner =(x+w,y)
             bottom_left_corner = (x,y+h)
             bottom_right_corner = (x+w,y+h)
