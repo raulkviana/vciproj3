@@ -12,3 +12,11 @@ class lego_track (lego):
         Returns the coordinates of the corners
         '''
         super().get_corners()
+
+
+    def get_center(self):
+        '''
+        Get center of the lego
+
+        '''
+        super().get_center()

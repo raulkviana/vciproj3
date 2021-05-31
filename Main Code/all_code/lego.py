@@ -19,10 +19,22 @@ class lego:
             bottom_right_corner = (x+w,y+h)
             top_left_corner = (x,y)
 
-            corners = [top_left_corner, top_right_corner, bottom_left_corner, bottom_right_corner]
+            corners = {"top_left_corner":top_left_corner, "top_right_corner":top_right_corner,
+                       "bottom_left_corner":bottom_left_corner, "bottom_right_corner":bottom_right_corner}
 
         else:
             corners = self.contour
 
         return corners
+
+    def get_center(self):
+        '''
+        Get center of the lego
+
+        '''
+        corners = get_corners()
+
+        return [(corners["top_left_corner"]+corners["top_right_corner"])/2,
+                (corners["bottom_left_corner"]+corners["bottom_right_corner"])/2]
+
 
