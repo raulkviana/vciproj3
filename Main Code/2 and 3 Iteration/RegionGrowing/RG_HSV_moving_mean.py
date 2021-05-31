@@ -109,6 +109,7 @@ def main():
     #scale_percent
     #filename = "../dataset2/yellow.png"
     #img = read_img(filename, scale_percent)
+
     height, width, _ = img.shape
     """ DISPLAY DATASET'S FIRST IMAGE """
     cv.imshow('Original', img)
