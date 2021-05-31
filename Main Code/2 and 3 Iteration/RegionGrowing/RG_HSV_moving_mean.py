@@ -98,25 +98,24 @@ def nothing(x):
 
 def main():
     """ local variables"""
-    scale_percent = 20
-    dir_str = '../dataset2/rect/'
+    scale_percent = 100
+    dir_str = '../datasetBox/'
     default_thresh = 50
     """ create an iterator for the dataset """
     lst_img = glob.glob(dir_str + '*.jpg')
     img_iter = iter(lst_img)
     img = read_img(next(img_iter), scale_percent)
     """ UNCOMMENT LINES ABOVE TO TEST A SPECIFIC IMAGE """
-    #scale_percent
+    #scale_percent = 100
     #filename = "../dataset2/yellow.png"
     #img = read_img(filename, scale_percent)
-
     height, width, _ = img.shape
     """ DISPLAY DATASET'S FIRST IMAGE """
     cv.imshow('Original', img)
     cv.createTrackbar('threshold', 'Original', default_thresh, 255, nothing)
     cv.imshow('Region Growing', img)
     """ convert image to HSV to feed it to the Region Growing algorithm """
-    img_hsv = cv.cvtColor(img, cv.COLOR_RGB2HSV)
+    img_hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
 
     mask = old_mask = None
     min_max_hsv = None
@@ -141,7 +140,7 @@ def main():
             """ read and display new image """
             img = read_img(file_name, scale_percent)
             height, width, _ = img.shape
-            img_hsv = cv.cvtColor(img, cv.COLOR_RGB2HSV)
+            img_hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
             cv.imshow('Original', img)
             cv.imshow('Region Growing', img)
             cv.createTrackbar('threshold', 'Original', default_thresh, 255, nothing)
@@ -176,7 +175,7 @@ def main():
 
             print("min HSV: {}\tmax HSV: {}".format(min_max_hsv[0], min_max_hsv[1]))
             """ display region growing and highlight the seed location """
-            img_region_growing_bgr = cv.cvtColor(img_region_growing_hsv, cv.COLOR_HSV2RGB)
+            img_region_growing_bgr = cv.cvtColor(img_region_growing_hsv, cv.COLOR_HSV2BGR)
             cv.circle(img_region_growing_bgr, (seed[1], seed[0]), 3, (170, 90, 200), 3)
             cv.imshow('Region Growing', img_region_growing_bgr)
             """ save the last mask to allow mask overlapping """
