@@ -13,4 +13,6 @@ NUMBER_OF_PICS = 25 # Number of pictures to be taken
 SECOND_PER_FRAME = 1000 # fps
 OUTPUT_FILE_NAME1 = "camara.npz"
 OUTPUT_FILE_NAME2 = "points.npz" # Output file with the calibration parameters
+EXPOSURE_VAL = 40
+WHITE_BALANCE = 30
 

@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 from Constants import constants_calib
+from picamera import PiCamera
 
 class Calibration:
     def __init__(self):
@@ -21,9 +22,10 @@ class Calibration:
         self.objpoints = None
         self.re_proj = None
 
+
     def compute_calib_params(self, vid_source = 0, num_of_pics = constants_calib.NUMBER_OF_PICS,\
                              period = constants_calib.SECOND_PER_FRAME, columns = constants_calib.NUMBER_OF_COLUMNS,
-                             rows = constants_calib.NUMBER_OF_ROWs):
+                             rows = constants_calib.NUMBER_OF_ROWS):
         """
         @brief Compute the parameters of the camera using a chessboard
         @param [in] vid_source : Video source
@@ -89,7 +91,6 @@ class Calibration:
         print("Translation vector: ", str(self.tvecs))
         print("Intrinsic parameters: ", str(self.mtx))
 
-
         cv.destroyAllWindows()
 
         camera_params = [self.mtx, self.dist, self.rvecs, self.tvecs]
@@ -98,6 +99,13 @@ class Calibration:
 
     def read_params_file(self, in_path_cam_param = constants_calib.OUTPUT_FILE_NAME1, \
                          in_path_points  = constants_calib.OUTPUT_FILE_NAME2):
+        '''
+        @brief Ler os parametros num ficheiro para esta classe
+
+        :param in_path_cam_param: nome do ficheiro com os parametros da câmara
+        :param in_path_points: nome do ficheiro com os pontos no mundo real do tabuleiro de xadrez
+
+        '''
         # Get the camera parameters
         data1 = load(in_path_cam_param)
         # Get the points
@@ -114,6 +122,10 @@ class Calibration:
         self.objpoints = data2["objpoints"]
 
     def re_projection_error(self):
+        '''
+        @brief Calcular o erro associado aos coeficientes de distorção
+
+        '''
         # Re-projection error
         print("Calculate Re-projection error")
         mean_error = 0
@@ -133,17 +145,32 @@ class Calibration:
         return self.re_proj
 
     def write_param_out(self, out_path_cam_param, out_path_points):
+        '''
+        @brief Guardar os parametros presentes na classe num ficheiro
+
+        :param out_path_cam_param: nome do ficheiro com os parametros da câmara
+        :param out_path_points: nome do ficheiro com os pontos no mundo real do tabuleiro de xadrez
+
+        '''
         print("\n\nSaving parameters")
         from tempfile import TemporaryFile
 
+        # Write parameters
         outfile = open(out_path_cam_param, 'w')
         np.savez(out_path_cam_param, intrinsics=self.mtx, distortion=self.dist, rotation=self.rvecs, translation=self.tvecs)
 
+        # Write points
         outfile2 = open(out_path_points, 'w')
         np.savez(out_path_points, imgpoints = self.imgpoints, objpoints = self.objpoints)
 
 
     def undistort(self, img):
+        '''
+        @brief Undistort da imagem
+
+        :param img: Imagem que se pretende fazer o undistort
+
+        '''
         # Get the camera parameters
         h, w = img.shape[:2]  # Get height and width
         newcameramtx, roi = cv.getOptimalNewCameraMatrix(self.mtx, self.dist, (w, h), 1,
