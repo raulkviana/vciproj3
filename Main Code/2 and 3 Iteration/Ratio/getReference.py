@@ -12,7 +12,6 @@ img = dataset_iterator.resize(img, 15) # Resize image
 gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
 cv.imshow('Original Gray ',gray)
 
-
 # Otsu's thresholding after Gaussian filtering
 blur = cv.GaussianBlur(gray,(5,5),0)
 ret3,th3 = cv.threshold(blur,127,255,cv.THRESH_BINARY_INV)
