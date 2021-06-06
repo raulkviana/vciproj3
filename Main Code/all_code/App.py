@@ -111,6 +111,7 @@ if __name__ == "__main__":
         calib.read_params_file()
 
     r = input('Do you want to get a new reference?\n')
+    camera = cv.VideoCapture(0)
 
     if r == 'y':
         r = input('Insert the piece unit length (e.g., if it is a 2x2, its length is 2): \n')
@@ -119,10 +120,11 @@ if __name__ == "__main__":
         print('Position the piece below the camera, when ready press any key')
         input('')
 
-        frame = np.empty((constants_app.PICTURES_DIMENSION[0] * constants_app.PICTURES_DIMENSION[1] * 3,),
-                         dtype=np.uint8)
-        camera.capture(frame, 'bgr')
-        frame = frame.reshape((constants_app.PICTURES_DIMENSION[1], constants_app.PICTURES_DIMENSION[0], 3))
+        #frame = np.empty((constants_app.PICTURES_DIMENSION[0] * constants_app.PICTURES_DIMENSION[1] * 3,),
+                         #dtype=np.uint8)
+        #camera.capture(frame, 'bgr')
+        #frame = frame.reshape((constants_app.PICTURES_DIMENSION[1], constants_app.PICTURES_DIMENSION[0], 3))
+        ret, frame = camera.read()
 
         fe.get_reference(frame, unit_length)
 
@@ -133,7 +135,6 @@ if __name__ == "__main__":
     print('\n\nInstructions:')
     print('Press s to save legos to file')
     print('Press q to quit the app')
-    camera = cv.VideoCapture(0)
 
     while (True):
 
