@@ -20,3 +20,7 @@ class lego_track (lego):
 
         '''
         super().get_center()
+
+    def __str__(self):
+        return str(self.__class__) + ": " + str(self.__dict__)
+

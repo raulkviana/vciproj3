@@ -10,7 +10,7 @@ sizeRealWorld = 24 # mm
 
 # Constants
 NUMBER_OF_PICS = 25 # Number of pictures to be taken
-FRAMES_PER_SECOND = 1000 # fps
+FRAMES_PER_SECOND = 200 # fps
 OUTPUT_FILE_NAME = "camara.npz" # Output file with the calibration parameters
 
 
