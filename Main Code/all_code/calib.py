@@ -25,12 +25,12 @@ class Calibration:
         self.re_proj = None
 
 
-    def compute_calib_params(self, vid_source = 0, piCam = None, num_of_pics = constants_calib.NUMBER_OF_PICS,
+    def compute_calib_params(self, opencvCam = None, piCam = None, num_of_pics = constants_calib.NUMBER_OF_PICS,
                              period = constants_calib.SECOND_PER_FRAME, columns = constants_calib.NUMBER_OF_COLUMNS,
                              rows = constants_calib.NUMBER_OF_ROWS):
         """
         @brief Compute the parameters of the camera using a chessboard
-        @param [in] vid_source : Video source
+        @param [in] opencvCam : Video source
         @param [in] num_of_pics : Number of pictures to use for the calibration
         @param [in] columns: Number of columns corresponding to the chessboard scheme
         @param [in] rows:  Number of rows corresponding to the chessboard scheme
@@ -40,19 +40,21 @@ class Calibration:
         """
         camera_params = None
 
-        if piCam == None:
+        criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, constants_calib.CHESSBOARD_SQUARE_SIZE, 0.001)
+
+        # prepare object points coordinates
+        self.objp = np.zeros((columns * rows, 3), np.float32)
+        self.objp[:, :2] = np.mgrid[0:rows, 0:columns].T.reshape(-1, 2)
+
+        # Arrays to store object points and image points from all the images.
+        self.objpoints = []  # 3d point in real world space
+        self.imgpoints = []  # 2d points in image plane.
+
+        if opencvCam != None:
             criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, constants_calib.CHESSBOARD_SQUARE_SIZE, 0.001)
 
-            # prepare object points coordinates
-            self.objp = np.zeros((columns * rows, 3), np.float32)
-            self.objp[:, :2] = np.mgrid[0:rows, 0:columns].T.reshape(-1, 2)
-
-            # Arrays to store object points and image points from all the images.
-            self.objpoints = []  # 3d point in real world space
-            self.imgpoints = []  # 2d points in image plane.
-
             # Start camera
-            cam = cv.VideoCapture(vid_source)
+            cam = opencvCam
             counter = 0 # Counter of the number of pictures for the calibration
 
             while (True):
@@ -99,17 +101,7 @@ class Calibration:
 
             camera_params = [self.mtx, self.dist, self.rvecs, self.tvecs]
 
-        else:
-
-            criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, constants_calib.CHESSBOARD_SQUARE_SIZE, 0.001)
-
-            # prepare object points coordinates
-            self.objp = np.zeros((columns * rows, 3), np.float32)
-            self.objp[:, :2] = np.mgrid[0:rows, 0:columns].T.reshape(-1, 2)
-
-            # Arrays to store object points and image points from all the images.
-            self.objpoints = []  # 3d point in real world space
-            self.imgpoints = []  # 2d points in image plane.
+        elif piCam != None:
 
             # Start camera
             counter = 0  # Counter of the number of pictures for the calibration
@@ -117,7 +109,8 @@ class Calibration:
             while (True):
 
                 # Get frame from camara
-                frame = np.empty((constants_app.PICTURES_DIMENSION[0] * constants_app.PICTURES_DIMENSION[1] * 3,), dtype=np.uint8)
+                frame = np.empty((constants_app.PICTURES_DIMENSION[0] * constants_app.PICTURES_DIMENSION[1] * 3,),
+                                 dtype=np.uint8)
                 camera.capture(frame, 'bgr')
                 frame = frame.reshape((constants_app.PICTURES_DIMENSION[1], constants_app.PICTURES_DIMENSION[0], 3))
 
@@ -158,6 +151,56 @@ class Calibration:
             cv.destroyAllWindows()
 
             camera_params = [self.mtx, self.dist, self.rvecs, self.tvecs]
+
+        else:
+
+            # Start camera
+            cam = cv.VideoCapture(0)
+            counter = 0  # Counter of the number of pictures for the calibration
+
+            while (True):
+
+                # Get frame from camara
+                ret, frame = cam.read()
+
+                # Transform image to grayscale
+                gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+                # Find the chess board corners
+                ret, corners = cv.findChessboardCorners(gray, (rows, columns), None)
+
+                # If found, add object points, image points (after refining them)
+                if ret == True:
+                    # Adding points found to the vectors
+                    self.objpoints.append(objp)
+                    corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+                    self.imgpoints.append(corners)
+
+                    # Draw and display the corners
+                    cv.drawChessboardCorners(frame, (rows, columns), corners2, ret)
+
+                    # Update
+                    counter = counter + 1
+
+                cv.waitKey(period)  # Delay
+                cv.imshow("Calibration", frame)  # Show image
+
+                if counter == num_of_pics:
+                    break
+
+            # Calibration parameters
+            ret, self.mtx, self.dist, self.rvecs, self.tvecs = cv.calibrateCamera(self.objpoints, self.imgpoints,
+                                                                                  gray.shape[::-1], None, None)
+
+            # Present results
+            print("Distortion coeficients: ", str(self.dist))
+            print("Rotation vector: ", str(self.rvecs))
+            print("Translation vector: ", str(self.tvecs))
+            print("Intrinsic parameters: ", str(self.mtx))
+
+            cv.destroyAllWindows()
+
+            camera_params = [self.mtx, self.dist, self.rvecs, self.tvecs]
+
 
         return camera_params
 

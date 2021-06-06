@@ -14,6 +14,7 @@ class FeatureExtrac:
         unit_ref = npz_stuff["unitSize"]
         self.unitSize = unit_ref
         self.lst_legos = []
+        self.reset_lst = 0
         self.font = cv.FONT_HERSHEY_SIMPLEX
 
 
@@ -47,7 +48,7 @@ class FeatureExtrac:
 
             x, y, w, h = cv.boundingRect(approx)
 
-            self.unitSize = int((min(h, w)) / piece_unit_length)
+            self.unitSize = (min(h, w)) / piece_unit_length
 
             # Print to file
             print("\nSaving in a file")
@@ -112,7 +113,7 @@ class FeatureExtrac:
 
         return closing, color_piece, mask_3
 
-    def __edge_finding(frame, closing, color_piece):
+    def __edge_finding(self, frame, closing, color_piece):
         """
         Edge finding function
         @param [in] frame : input image
@@ -145,7 +146,12 @@ class FeatureExtrac:
         minArea = closing.shape[1] * closing.shape[0] / 1000
         maxArea = closing.shape[1] * closing.shape[0] / 4
 
-        self.lst_legos.clear()
+        # Clear list after NUMBER_FRAMES_TO_RESET_LST as passed
+        if reset_lst >= constants_feat.NUMBER_FRAMES_TO_RESET_LST:
+            self.lst_legos.clear()
+
+        self.reset_lst = self.reset_lst + 1
+
         for c in contours:
             lego = Lego()
 
@@ -167,7 +173,15 @@ class FeatureExtrac:
                 else:
                     lego.rect = False
 
+                # Write to image the color of lego
                 cv.putText(frame, color, (x - w, y), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv.LINE_AA)
+
+                # Write to image the rect or not of lego
+                if not lego.rect:
+                    cv.putText(frame, 'rect', (x + w, y + h), cv.FONT_HERSHEY_SIMPLEX, 0.8, (235, 206, 135), 2, cv.LINE_AA)
+                else:
+                    cv.putText(frame, 'non-rect', (x + w, y + h), cv.FONT_HERSHEY_SIMPLEX, 0.8, (235, 206, 135), 2, cv.LINE_AA)
+
                 lego.ratio = self.find_ratio(approx, frame)
                 self.find_middle(approx, frame)
 
@@ -183,23 +197,22 @@ class FeatureExtrac:
 
     def __compute_ratio(self, w, h):
 
-        width = int(round(w / (self.unitSize - 1)))
-        height = int(round(h / (self.unitSize - 1)))
+        width = int(round(w / (self.unitSize)))
+        height = int(round(h / (self.unitSize)))
 
         return (width, height)
 
     def __info_about_shape(self,contour):
         '''
         Get info about the bounding box of the shape
-
         '''
+
         epsilon = 0.01 * cv.arcLength(contour, True)
         # Two Approximations
         approx = cv.approxPolyDP(contour, epsilon, True)
 
         # Info about the Square
         x, y, w, h = cv.boundingRect(approx)
-
 
         return (x, y, w, h)
 
@@ -256,7 +269,7 @@ class FeatureExtrac:
 
     def __check_in_list(self, lego):
         for l in self.lst_legos:
-            if l == lego:
+            if l.color == lego.color and l.ratio == lego.ratio and l.rect_non_rect == lego.rect_non_rect:
                 return True
 
         return False

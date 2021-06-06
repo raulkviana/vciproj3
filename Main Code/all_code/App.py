@@ -64,7 +64,7 @@ if __name__ == "__main__":
     SETUP
     '''
     print('Setting up...')
-
+    camera = cv.VideoCapture(0)
 
     # Basic setup
     #camera.resolution = constants_app.PICTURES_DIMENSION
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     if r == 'yes' or r == 'y':
         # Instrinsic calibration parameters
         #calib.compute_calib_params(piCam=camera)
-        calib.compute_calib_params(vid_source=0)
+        calib.compute_calib_params(vid_source=camera)
 
         r = input('Do you want to save parameters to a file?\n')
 
@@ -111,7 +111,6 @@ if __name__ == "__main__":
         calib.read_params_file()
 
     r = input('Do you want to get a new reference?\n')
-    camera = cv.VideoCapture(0)
 
     if r == 'y':
         r = input('Insert the piece unit length (e.g., if it is a 2x2, its length is 2): \n')
@@ -152,8 +151,8 @@ if __name__ == "__main__":
         fe.find_color_ratio(frame)
         lego_lst.extend(fe.lst_legos)
         # Get unique legos from the list
-        A_set = set(lego_lst)
-        # lego_lst = list(A_set)
+        A_set = set(lego_lst) # Se nao conseguires encontrar legos, apaga esta e a linha de baixo
+        lego_lst = list(A_set)
         print("Legos found:")
         print(lego_lst)
 
@@ -169,4 +168,4 @@ if __name__ == "__main__":
             r = input('What is the name of the output file?\n')
             write2file(r)
 
-    camera.stop_preview()
+    #camera.stop_preview()
