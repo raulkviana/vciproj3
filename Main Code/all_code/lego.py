@@ -32,9 +32,11 @@ class Lego:
         Get center of the lego
 
         '''
-        corners = get_corners()
+        corners = self.get_corners()
 
         return [(corners["top_left_corner"]+corners["top_right_corner"])/2,
                 (corners["bottom_left_corner"]+corners["bottom_right_corner"])/2]
 
+    def __str__(self):
+        return str(self.__class__) + ": " + str(self.__dict__)
 
