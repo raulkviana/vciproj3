@@ -145,6 +145,7 @@ class FeatureExtrac:
         minArea = closing.shape[1] * closing.shape[0] / 1000
         maxArea = closing.shape[1] * closing.shape[0] / 4
 
+        self.lst_legos.clear()
         for c in contours:
             lego = Lego()
 
