@@ -101,7 +101,7 @@ class FeatureExtrac:
         kernel = np.ones((3, 3), np.uint8)
         closing = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel, iterations=10)
         closing = cv.morphologyEx(closing, cv.MORPH_OPEN, kernel, iterations=3)  # Remove small dots
-        cv.imshow('maks', closing)
+        
 
         # You can also visualize the real part of the target color (Optional)
         color_piece = cv.bitwise_and(frame, frame, mask=closing)
@@ -221,7 +221,7 @@ class FeatureExtrac:
 
     def find_middle(self,cont, frame_s):
         x, y, w, h = self.__info_about_shape(cont)
-        cv.circle(frame_s, [int(x+w/2), int(y+h/2)], 5, (255, 255, 255), -1)
+        cv.circle(frame_s, (int(x+w/2), int(y+h/2)), 5, (255, 255, 255), -1)
 
         # x, y, w, h = info_about_shape(cont)
         # print("point:",point)

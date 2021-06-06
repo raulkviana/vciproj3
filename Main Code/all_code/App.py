@@ -2,7 +2,7 @@ import numpy as np
 import cv2 as cv
 from Constants import constants_app
 from calib import Calibration
-from lego import lego
+from lego import Lego
 from feature_extrac import FeatureExtrac as fe
 from picamera import PiCamera
 from time import sleep
@@ -64,28 +64,34 @@ if __name__ == "__main__":
     SETUP
     '''
     print('Setting up...')
-    with picamera.PiCamera() as camera:
-
+    with PiCamera() as camera:
+		
         # Basic setup
         camera.resolution = constants_app.PICTURES_DIMENSION
         camera.framerate = constants_app.FPS
-
+        """
         # Configure camera (optional)
         print('Preparing camera color parameters')
         # Force sensor mode 3 (the long exposure mode), set
         # the framerate to 1/6fps, the shutter speed to 6s,
         # and ISO to 800 (for maximum gain)
         camera.sensor_mode = 3
-        camera.shutter_speed = 1000000
-        camera.iso = 800
+        camera.shutter_speed = 10_000
+        camera.iso = 200
         # Give the camera a good long time to set gains and
         # measure AWB (you may wish to use fixed AWB instead)
-        sleep(15)
+        sleep(5)
         # Now fix the values
         camera.exposure_mode = 'off'
         g = camera.awb_gains
         camera.awb_mode = 'off'
         camera.awb_gains = g
+        sleep(2)
+
+        """
+
+        # Start showing camera
+        camera.start_preview()
         sleep(5)
 
         # Calibration module
@@ -137,20 +143,21 @@ if __name__ == "__main__":
             camera.capture(frame, 'bgr')
             frame = frame.reshape((constants_app.PICTURES_DIMENSION[1], constants_app.PICTURES_DIMENSION[0], 3))
 
-            # Fazer o undistort da imagem, usando o modulo calib
-            frame = fe.resize(frame, constants_feat.RESIZING_FACTOR, constants_feat.RESIZING_FACTOR)
-            undistort_img = calib.undistort(frame)
+            #undistort_img = calib.undistort(frame)
 
             # Procurar por legos
-            fe.find_color_ratio(undistort_img)
-            lego_lst.extend(fe.self.lst_legos)
+            fe.find_color_ratio(frame)
+            lego_lst.extend(fe.lst_legos)
             # Get unique legos from the list
             A_set = set(lego_lst)
-            lego_lst = list(A_set)
+            #lego_lst = list(A_set)
             print("Legos found:")
             print(lego_lst)
 
-            cv.imshow('Output Window', undistort_img)
+            # Fazer o undistort da imagem, usando o modulo calib
+            frame = fe.resize(frame, constants_feat.RESIZING_FACTOR, constants_feat.RESIZING_FACTOR)
+ 
+            cv.imshow('Output Window', frame)
 
             k = cv.waitKey(2)
             if k == ord ('q'):
@@ -158,6 +165,8 @@ if __name__ == "__main__":
             elif k == ord('s'):
                 r = input('What is the name of the output file?\n')
                 write2file(r)
-
+		
+        camera.stop_preview()
+		
 
 
