@@ -3,27 +3,29 @@ import numpy as np
 from numpy import load
 import time
 from Constants import constants_feat
-from lego import lego
+from lego import Lego
 # in order to read the color json file
 import json
 
-class featureExtrac:
+
+class FeatureExtrac:
     def __init__(self, reference = constants_feat.INPUT_FILE_UNIT_REF):
         npz_stuff = load(reference)
         unit_ref = npz_stuff["unitSize"]
         self.unitSize = unit_ref
         self.lst_legos = []
+        self.font = cv.FONT_HERSHEY_SIMPLEX
 
 
-    def get_reference(self, img_reference, outfile_name, piece_unit_length):
+    def get_reference(self, img1, piece_unit_length, outfile_name = constants_feat.INPUT_FILE_UNIT_REF):
         '''
         :param: [in] piece_unit_length: The length of the piece (e.g., if it is a 2x2, its length is 2).
         :param: [in] img_reference:: This image must contain only one square lego piece.
 
         '''
 
-        img = cv.imread(img_reference)
-        img = resize(img,constants_feat.RESIZING_FACTOR, constants_feat.RESIZING_FACTOR)  # Resize image
+        #img = self.resize(img,constants_feat.RESIZING_FACTOR, constants_feat.RESIZING_FACTOR)  # Resize image
+        img = img1.copy()
 
         # Convert to gray
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
@@ -58,7 +60,7 @@ class featureExtrac:
             print("Success!")
 
 
-    def __resize(self,img, fx, fy):
+    def resize(self,img, fx, fy):
         height, width = img.shape[:2]
         size = (int(width * fx), int(height * fy))
         img = cv.resize(img, size)
@@ -96,9 +98,10 @@ class featureExtrac:
         mask = cv.inRange(hsv, lower_range, upper_range)
 
         # Morphological operation -> closing
-        kernel = np.ones((5, 5), np.uint8)
-        closing = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel, iterations=8)
+        kernel = np.ones((3, 3), np.uint8)
+        closing = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel, iterations=10)
         closing = cv.morphologyEx(closing, cv.MORPH_OPEN, kernel, iterations=3)  # Remove small dots
+        cv.imshow('maks', closing)
 
         # You can also visualize the real part of the target color (Optional)
         color_piece = cv.bitwise_and(frame, frame, mask=closing)
@@ -132,18 +135,18 @@ class featureExtrac:
 
         return edge, edge_color
 
-    def __find_everything(self,closing, frame,color):
+    def __find_everything(self,closing, frame, color):
         """
         @param [in] closing : morphological operation
         @param [in] frame : image copy
         """
 
         contours, hierarchy = cv.findContours(closing, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-        minArea = closing.shape[1] * closing.shape[0] / 7000
+        minArea = closing.shape[1] * closing.shape[0] / 1000
         maxArea = closing.shape[1] * closing.shape[0] / 4
 
         for c in contours:
-            lego = lego()
+            lego = Lego()
 
             approx = cv.approxPolyDP(c, 0.01 * cv.arcLength(c, True), True)
             #print("\napprox: ", approx)
@@ -151,9 +154,9 @@ class featureExtrac:
 
             # If the area is not between this range, ignore
             if (minArea < w * h < maxArea):
-                #aspect_ratio = float(w) / float(h)
-                #print("aspect:", aspect_ratio)
-                #print(hsv_color)
+                # aspect_ratio = float(w) / float(h)
+                # print("aspect:", aspect_ratio)
+                # print(hsv_color)
 
                 lego.color = color
                 lego.contour = approx
@@ -164,11 +167,11 @@ class featureExtrac:
                     lego.rect = False
 
                 cv.putText(frame, color, (x - w, y), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv.LINE_AA)
-                lego.ratio = findRatio(approx, frame)
-                findCorners(approx, frame)
+                lego.ratio = self.find_ratio(approx, frame)
+                self.find_middle(approx, frame)
 
                 # Add to lego list
-                if not __check_in_list(lego):
+                if not self.__check_in_list(lego):
                     self.lst_legos.append(lego)
 
     '''
@@ -177,7 +180,7 @@ class featureExtrac:
     #######################################################################################################################
     '''
 
-    def __compute_ratio(self,w, h):
+    def __compute_ratio(self, w, h):
 
         width = int(round(w / (self.unitSize - 1)))
         height = int(round(h / (self.unitSize - 1)))
@@ -199,36 +202,42 @@ class featureExtrac:
 
         return (x, y, w, h)
 
-    def findRatio(self,cont, frame_s):
-        x, y, w, h = __info_about_shape(cont)
+    def find_ratio(self,cont, frame_s):
+        x, y, w, h = self.__info_about_shape(cont)
 
-        ratio = __compute_ratio(w, h)
+        ratio = self.__compute_ratio(w, h)
 
         # Write the ratio on image
         cv.putText(frame_s, str(ratio[0]) + "x" + str(ratio[1]), (x + w, y + h), self.font, 0.5, (0, 0, 0), 1,
                    cv.LINE_AA)
 
-    def findCorners(self,cont, frame_s):
-        for c in cont:
-            # print("point:",point)
-            cv.circle(frame_s, c, 5, (255, 255, 255), -1)
+        return ratio
 
-        #x, y, w, h = info_about_shape(cont)
+    def get_lego_real_size(self,lego):
+        ratio_real_world = (lego.ratio[0] * constants_feat.REAL_WORLD_LENGTH_LEGO,
+                            lego.ratio[1] * constants_feat.REAL_WORLD_LENGTH_LEGO)
+
+        return ratio_real_world
+
+    def find_middle(self,cont, frame_s):
+        x, y, w, h = self.__info_about_shape(cont)
+        cv.circle(frame_s, [int(x+w/2), int(y+h/2)], 5, (255, 255, 255), -1)
+
+        # x, y, w, h = info_about_shape(cont)
         # print("point:",point)
-        #cv.circle(frame_s, (x + w, y), 5, (255, 255, 255), -1)
-        #cv.circle(frame_s, (x, y + h), 5, (255, 255, 255), -1)
-        #cv.circle(frame_s, (x, y), 5, (255, 255, 255), -1)
-        #cv.circle(frame_s, (x + w, y + h), 5, (255, 255, 255), -1)
+        # cv.circle(frame_s, (x + w, y), 5, (255, 255, 255), -1)
+        # cv.circle(frame_s, (x, y + h), 5, (255, 255, 255), -1)
+        # cv.circle(frame_s, (x, y), 5, (255, 255, 255), -1)
+        # cv.circle(frame_s, (x + w, y + h), 5, (255, 255, 255), -1)
 
-    def find_color_ratio(self,image, json_colors = "colors.json"):
+    def find_color_ratio(self,img1, json_colors = constants_feat.DEFAULT_COLOR_PATH):
         '''
-            Find Color and ratio in an image, with a given json file with colors
+        Find Color and ratio in an image, with a given json file with colors
         '''
 
-        img = cv.imread(image)
-        img = dataset_iterator.resize(img, constants_feat.RESIZING_FACTOR)  # Resize image
-
-        # #read file
+        #img = self.resize(img1, constants_feat.RESIZING_FACTOR,constants_feat.RESIZING_FACTOR)  # Resize image
+        img = img1.copy()
+        # read file
         with open(json_colors) as json_file:
             data = json_file.read()
 
@@ -239,10 +248,10 @@ class featureExtrac:
             hsv_low = (f['hsv_low'])
             hsv_upper = (f['hsv_upper'])
 
-            closing, color_piece, mask_3 = __imageprocessing(img, hsv_low, hsv_upper)
+            closing, color_piece, mask_3 = self.__imageprocessing(img, hsv_low, hsv_upper)
 
-            # Find Color
-            find_everything(closing, img,hsv_color)
+            # Find All lego feautures
+            self.__find_everything(closing, img1, hsv_color)
 
     def __check_in_list(self, lego):
         for l in self.lst_legos:
@@ -250,6 +259,3 @@ class featureExtrac:
                 return True
 
         return False
-
-
-

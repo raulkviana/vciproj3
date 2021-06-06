@@ -1,7 +1,7 @@
 import cv2 as cv
 import numpy as np
 
-class lego:
+class Lego:
     def __init__(self,ratio = None ,color= None, contour= None, rect_non_rect = None):
         self.ratio = ratio
         self.contour = contour
