@@ -1,8 +1,8 @@
 import cv2 as cv
 import numpy as np
-from lego import lego
+from lego import Lego
 
-class lego_track (lego):
+class lego_track (Lego):
     def __init__(self,ratio = None ,color= None, contour= None, rect_non_rect = None, id = None):
         super().__init__(ratio ,color, contour, rect_non_rect)
         self.id = id
