@@ -14,6 +14,7 @@ class FeatureExtrac:
         unit_ref = npz_stuff["unitSize"]
         self.unitSize = unit_ref
         self.lst_legos = []
+        self.reset_lst = 0
         self.font = cv.FONT_HERSHEY_SIMPLEX
 
 
@@ -26,38 +27,44 @@ class FeatureExtrac:
 
         #img = self.resize(img,constants_feat.RESIZING_FACTOR, constants_feat.RESIZING_FACTOR)  # Resize image
         img = img1.copy()
+        done = False
+        
+        while not done:
 
-        # Convert to gray
-        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+            # Convert to gray
+            gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-        # Otsu's thresholding after Gaussian filtering
-        blur = cv.GaussianBlur(gray, (5, 5), 0)
-        ret3, th3 = cv.threshold(blur, 127, 255, cv.THRESH_BINARY_INV)
+            # thresholding after Gaussian filtering
+            blur = cv.GaussianBlur(gray, (5, 5), 0)
+            ret3, th3 = cv.threshold(blur, 127, 255, cv.THRESH_BINARY_INV)
 
-        # Close: para obter as formas como deve ser
-        bw = cv.morphologyEx(th3, cv.MORPH_CLOSE, np.ones((10, 10)), iterations=10)
-        #cv.imshow('BW ', bw)
+            # Close: para obter as formas como deve ser
+            bw = cv.morphologyEx(th3, cv.MORPH_CLOSE, np.ones((10, 10)), iterations=10)
+            #cv.imshow('BW ', bw)
 
-        # Contours
-        contours, hierarchy = cv.findContours(bw, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-        if (len(contours) == 1):
-            epsilon = 0.01 * cv.arcLength(contours[0], True)
-            # Two Approximations
-            approx = cv.approxPolyDP(contours[0], epsilon, True)
+            # Contours
+            contours, hierarchy = cv.findContours(bw, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+            if (len(contours)):
+                done=True
+                epsilon = 0.01 * cv.arcLength(contours[0], True)
+                # Two Approximations
+                approx = cv.approxPolyDP(contours[0], epsilon, True)
 
-            x, y, w, h = cv.boundingRect(approx)
+                x, y, w, h = cv.boundingRect(approx)
 
-            self.unitSize = int((min(h, w)) / piece_unit_length)
+                self.unitSize = (min(h, w)) / piece_unit_length
 
-            # Print to file
-            print("\nSaving in a file")
-            from tempfile import TemporaryFile
-            outfile = open(outfile_name, 'w')
-            np.savez(outfile_name, unitSize=self.unitSize)  # Dividi por 2 porque a imagem é um 2x2
+                # Print to file
+                print("\nSaving in a file")
+                from tempfile import TemporaryFile
+                outfile = open(outfile_name, 'w')
+                np.savez(outfile_name, unitSize=self.unitSize)  # Dividi por 2 porque a imagem é um 2x2
 
-            print("Pixels per unit: ", self.unitSize)
+                print("Pixels per unit: ", self.unitSize)
 
-            print("Success!")
+                print("Success!")
+            #else:
+            #    raise Exception('Reference wasnt obtained')
 
 
     def resize(self,img, fx, fy):
@@ -84,6 +91,8 @@ class FeatureExtrac:
         @param [out] closing : morphological operation
         @param [out] color_piece : visualize the real part of the target
         """
+        #print("hsv_low: ", hsv_low)
+        #print("hsv_upper: ", hsv_upper)
 
         # Convert the BGR image to HSV image.
         hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
@@ -101,7 +110,7 @@ class FeatureExtrac:
         kernel = np.ones((3, 3), np.uint8)
         closing = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel, iterations=10)
         closing = cv.morphologyEx(closing, cv.MORPH_OPEN, kernel, iterations=3)  # Remove small dots
-        
+        cv.imshow('MAsk',closing)
 
         # You can also visualize the real part of the target color (Optional)
         color_piece = cv.bitwise_and(frame, frame, mask=closing)
@@ -112,7 +121,7 @@ class FeatureExtrac:
 
         return closing, color_piece, mask_3
 
-    def __edge_finding(frame, closing, color_piece):
+    def __edge_finding(self, frame, closing, color_piece):
         """
         Edge finding function
         @param [in] frame : input image
@@ -145,7 +154,12 @@ class FeatureExtrac:
         minArea = closing.shape[1] * closing.shape[0] / 1000
         maxArea = closing.shape[1] * closing.shape[0] / 4
 
-        self.lst_legos.clear()
+        # Clear list after NUMBER_FRAMES_TO_RESET_LST as passed
+        if self.reset_lst >= constants_feat.NUMBER_FRAMES_TO_RESET_LST:
+            self.lst_legos.clear()
+
+        #self.reset_lst = self.reset_lst + 1
+
         for c in contours:
             lego = Lego()
 
@@ -167,7 +181,15 @@ class FeatureExtrac:
                 else:
                     lego.rect = False
 
+                # Write to image the color of lego
                 cv.putText(frame, color, (x - w, y), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv.LINE_AA)
+
+                # Write to image the rect or not of lego
+                if not lego.rect:
+                    cv.putText(frame, 'rect', (x -w, y + h), cv.FONT_HERSHEY_SIMPLEX, 0.8, (235, 206, 135), 2, cv.LINE_AA)
+                else:
+                    cv.putText(frame, 'non-rect', (x - w, y + h), cv.FONT_HERSHEY_SIMPLEX, 0.8, (235, 206, 135), 2, cv.LINE_AA)
+
                 lego.ratio = self.find_ratio(approx, frame)
                 self.find_middle(approx, frame)
 
@@ -183,23 +205,22 @@ class FeatureExtrac:
 
     def __compute_ratio(self, w, h):
 
-        width = int(round(w / (self.unitSize - 1)))
-        height = int(round(h / (self.unitSize - 1)))
+        width = int(round(w / (self.unitSize)))
+        height = int(round(h / (self.unitSize)))
 
         return (width, height)
 
     def __info_about_shape(self,contour):
         '''
         Get info about the bounding box of the shape
-
         '''
+
         epsilon = 0.01 * cv.arcLength(contour, True)
         # Two Approximations
         approx = cv.approxPolyDP(contour, epsilon, True)
 
         # Info about the Square
         x, y, w, h = cv.boundingRect(approx)
-
 
         return (x, y, w, h)
 
@@ -256,7 +277,7 @@ class FeatureExtrac:
 
     def __check_in_list(self, lego):
         for l in self.lst_legos:
-            if l == lego:
+            if l.color == lego.color and l.ratio == lego.ratio and l.rect == lego.rect:
                 return True
 
         return False
