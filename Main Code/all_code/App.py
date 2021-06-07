@@ -59,7 +59,7 @@ if __name__ == "__main__":
     calib = Calibration()
     fe = fe()
     lego_lst = []
-
+    cnt_pic = 0
     '''
     SETUP
     '''
@@ -99,7 +99,7 @@ if __name__ == "__main__":
     if r == 'yes' or r == 'y':
         # Instrinsic calibration parameters
         #calib.compute_calib_params(piCam=camera)
-        calib.compute_calib_params(vid_source=camera)
+        calib.compute_calib_params(camera)
 
         r = input('Do you want to save parameters to a file?\n')
 
@@ -161,11 +161,15 @@ if __name__ == "__main__":
 
         cv.imshow('Output Window', frame)
 
-        k = cv.waitKey(2)
+        k = cv.waitKey(1)
         if k == ord('q'):
             break
         elif k == ord('s'):
             r = input('What is the name of the output file?\n')
             write2file(r)
+        elif k == ord('c'):
+            print('Picture saved!')
+            cv.imwrite('Appimage'+str(cnt_pic)+'.png',frame)
+            cnt_pic = cnt_pic + 1
 
     #camera.stop_preview()
