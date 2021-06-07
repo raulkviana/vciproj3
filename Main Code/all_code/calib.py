@@ -71,7 +71,7 @@ class Calibration:
                 if ret == True:
 
                     # Adding points found to the vectors
-                    self.objpoints.append(objp)
+                    self.objpoints.append(self.objp)
                     corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
                     self.imgpoints.append(corners)
 
@@ -122,7 +122,7 @@ class Calibration:
                 # If found, add object points, image points (after refining them)
                 if ret == True:
                     # Adding points found to the vectors
-                    self.objpoints.append(objp)
+                    self.objpoints.append(self.objp)
                     corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
                     self.imgpoints.append(corners)
 
@@ -171,7 +171,7 @@ class Calibration:
                 # If found, add object points, image points (after refining them)
                 if ret == True:
                     # Adding points found to the vectors
-                    self.objpoints.append(objp)
+                    self.objpoints.append(self.objp)
                     corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
                     self.imgpoints.append(corners)
 
