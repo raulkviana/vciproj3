@@ -2,8 +2,8 @@
      "colors":[
         {
             "color": "red",
-            "hsv_low": [0,64,0],
-            "hsv_upper":[5,225,255]
+            "hsv_low": [161,91,79],
+            "hsv_upper":[177,242,131]
         },
         
 		{
