@@ -216,21 +216,25 @@ class FeatureExtrac:
         '''
 
         epsilon = 0.01 * cv.arcLength(contour, True)
-        # Two Approximations
+        # Approximations
         approx = cv.approxPolyDP(contour, epsilon, True)
 
         # Info about the Square
-        x, y, w, h = cv.boundingRect(approx)
+        x_y, w_h, angle = cv.minAreaRect(approx)
+        print(cv.minAreaRect(approx))
 
-        return (x, y, w, h)
+        return x_y, w_h, angle
 
     def find_ratio(self,cont, frame_s):
-        x, y, w, h = self.__info_about_shape(cont)
+        x_y, w_h, angle = self.__info_about_shape(cont)
 
-        ratio = self.__compute_ratio(w, h)
+        ratio = self.__compute_ratio(w_h[0], w_h[1])
+        x_y[0] = int(x_y[0])
+        w_h = int(w_h)
+
 
         # Write the ratio on image
-        cv.putText(frame_s, str(ratio[0]) + "x" + str(ratio[1]), (x + w, y + h), self.font, 0.5, (0, 0, 0), 1,
+        cv.putText(frame_s, str(ratio[0]) + "x" + str(ratio[1]), (x_y[0] + w_h[0], x_y[1] + w_h[1]), self.font, 0.5, (0, 0, 0), 1,
                    cv.LINE_AA)
 
         return ratio
@@ -242,8 +246,8 @@ class FeatureExtrac:
         return ratio_real_world
 
     def find_middle(self,cont, frame_s):
-        x, y, w, h = self.__info_about_shape(cont)
-        cv.circle(frame_s, (int(x+w/2), int(y+h/2)), 5, (255, 255, 255), -1)
+        x_y, w_h, angle = self.__info_about_shape(cont)
+        cv.circle(frame_s, (int(x_y[0]+w_h[0]/2), int(x_y[1]+w_h[1]/2)), 5, (255, 255, 255), -1)
 
         # x, y, w, h = info_about_shape(cont)
         # print("point:",point)
