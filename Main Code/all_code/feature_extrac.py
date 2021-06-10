@@ -110,7 +110,7 @@ class FeatureExtrac:
         kernel = np.ones((3, 3), np.uint8)
         closing = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel, iterations=10)
         closing = cv.morphologyEx(closing, cv.MORPH_OPEN, kernel, iterations=3)  # Remove small dots
-        cv.imshow('MAsk',closing)
+        #cv.imshow('Mask',closing)
 
         # You can also visualize the real part of the target color (Optional)
         color_piece = cv.bitwise_and(frame, frame, mask=closing)
@@ -186,9 +186,9 @@ class FeatureExtrac:
 
                 # Write to image the rect or not of lego
                 if not lego.rect:
-                    cv.putText(frame, 'rect', (x -w, y + h), cv.FONT_HERSHEY_SIMPLEX, 0.8, (235, 206, 135), 2, cv.LINE_AA)
+                    cv.putText(frame, 'rect', (x - w, y + round(1.5*h)), cv.FONT_HERSHEY_SIMPLEX, 0.8, (235, 206, 135), 2, cv.LINE_AA)
                 else:
-                    cv.putText(frame, 'non-rect', (x - w, y + h), cv.FONT_HERSHEY_SIMPLEX, 0.8, (235, 206, 135), 2, cv.LINE_AA)
+                    cv.putText(frame, 'non-rect', (x - w, y + round(1.5*h)), cv.FONT_HERSHEY_SIMPLEX, 0.8, (235, 206, 135), 2, cv.LINE_AA)
 
                 lego.ratio = self.find_ratio(approx, frame)
                 self.find_middle(approx, frame)
@@ -205,8 +205,8 @@ class FeatureExtrac:
 
     def __compute_ratio(self, w, h):
 
-        width = int(round(w / (self.unitSize)))
-        height = int(round(h / (self.unitSize)))
+        width = round(w / (self.unitSize))
+        height = round(h / (self.unitSize))
 
         return (width, height)
 
@@ -216,22 +216,24 @@ class FeatureExtrac:
         '''
 
         epsilon = 0.01 * cv.arcLength(contour, True)
-        # Two Approximations
+        # Approximations
         approx = cv.approxPolyDP(contour, epsilon, True)
 
         # Info about the Square
-        x, y, w, h = cv.boundingRect(approx)
+        x_y, w_h, angle = cv.minAreaRect(approx)
 
-        return (x, y, w, h)
+        return x_y, w_h, angle
 
     def find_ratio(self,cont, frame_s):
-        x, y, w, h = self.__info_about_shape(cont)
+        x_y, w_h, angle = self.__info_about_shape(cont)
 
-        ratio = self.__compute_ratio(w, h)
+        ratio = self.__compute_ratio(w_h[0], w_h[1])
+        x_y_lst= list(map(round, list(x_y)))
+        w_h_lst = list(map(round, list(w_h)))
 
         # Write the ratio on image
-        cv.putText(frame_s, str(ratio[0]) + "x" + str(ratio[1]), (x + w, y + h), self.font, 0.5, (0, 0, 0), 1,
-                   cv.LINE_AA)
+        cv.putText(frame_s, str(ratio[0]) + "x" + str(ratio[1]), (x_y_lst[0] + int(w_h_lst[0]/2), x_y_lst[1]
+                   + int(w_h_lst[1]/2)), self.font, 0.5, (0, 0, 0), 1, cv.LINE_AA)
 
         return ratio
 
@@ -242,8 +244,10 @@ class FeatureExtrac:
         return ratio_real_world
 
     def find_middle(self,cont, frame_s):
-        x, y, w, h = self.__info_about_shape(cont)
-        cv.circle(frame_s, (int(x+w/2), int(y+h/2)), 5, (255, 255, 255), -1)
+        x_y, w_h, angle = self.__info_about_shape(cont)
+        x_y_lst = list(map(round, list(x_y)))
+        cv.circle(frame_s, (int(x_y_lst[0]), int(x_y_lst[1]))
+                  , 5, (255, 255, 255), -1)
 
         # x, y, w, h = info_about_shape(cont)
         # print("point:",point)
