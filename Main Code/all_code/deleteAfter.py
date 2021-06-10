@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     calib.read_params_file()
 
-    frame = cv.imread('test2.jpg')
+    frame = cv.imread('imageRef.jpg')
 
     # Fazer o undistort da imagem, usando o modulo calib
     # undistort_img = calib.undistort(frame)
