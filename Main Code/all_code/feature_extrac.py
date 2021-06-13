@@ -157,8 +157,9 @@ class FeatureExtrac:
         # Clear list after NUMBER_FRAMES_TO_RESET_LST as passed
         if self.reset_lst >= constants_feat.NUMBER_FRAMES_TO_RESET_LST:
             self.lst_legos.clear()
+            self.reset_lst = 0
 
-        #self.reset_lst = self.reset_lst + 1
+        self.reset_lst = self.reset_lst + 1
 
         for c in contours:
             lego = Lego()
@@ -194,8 +195,8 @@ class FeatureExtrac:
                 self.find_middle(approx, frame)
 
                 # Add to lego list
-                if not self.__check_in_list(lego):
-                    self.lst_legos.append(lego)
+                #if not self.__check_in_list(lego):
+                self.lst_legos.append(lego)
 
     '''
     #######################################################################################################################

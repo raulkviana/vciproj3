@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from lego import Lego
+from lego_v1 import Lego
 
 class lego_track (Lego):
     def __init__(self,ratio = None ,color= None, contour= None, rect_non_rect = None, id = None):
@@ -11,7 +11,7 @@ class lego_track (Lego):
         '''
         Returns the coordinates of the corners
         '''
-        super().get_corners()
+        return super().get_corners()
 
 
     def get_center(self):
@@ -19,7 +19,7 @@ class lego_track (Lego):
         Get center of the lego
 
         '''
-        super().get_center()
+        return super().get_center()
 
     def __str__(self):
         return str(self.__class__) + ": " + str(self.__dict__)
