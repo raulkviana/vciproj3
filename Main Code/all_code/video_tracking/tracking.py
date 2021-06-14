@@ -9,35 +9,6 @@ import sys
 #import json
 
 
-def apply_mask(frame, hsv_low, hsv_upper):
-        """
-        Used to mask the desired region using HSV range
-        @param [in] frame : input image
-        @param [in] hsv_low : HSV lower range
-        @param [in] hsv_upper: HSV upper range
-
-        @param [out] closing : morphological operation
-        """
-        # print("hsv_low: ", hsv_low)
-        # print("hsv_upper: ", hsv_upper)
-
-        # Convert the BGR image to HSV image.
-        hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-
-        # Set the lower and upper HSV range according to the value selected
-        # by the trackbar
-        lower_range = np.array(hsv_low)
-        upper_range = np.array(hsv_upper)
-
-        # Filter the image and get the binary mask, where white represents your target color
-        mask = cv.inRange(hsv, lower_range, upper_range)
-
-        # Morphological operation -> closing
-        kernel = np.ones((3, 3), np.uint8)
-        closing = cv.morphologyEx(mask, cv.MORPH_CLOSE, kernel, iterations=10)
-        closing = cv.morphologyEx(closing, cv.MORPH_OPEN, kernel, iterations=3)  # Remove small dots
-
-        return closing
 
 
 def find_legos(closing, color):

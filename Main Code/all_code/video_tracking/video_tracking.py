@@ -21,9 +21,6 @@ if __name__ == '__main__':
     # parse file
     obj = json.loads(data)
 
-    #low_hsv = (0, 113, 147)
-    #upper_hsv = (6, 212, 203)
-
     while cap.isOpened():
 
         ret, frame = cap.read()
@@ -39,7 +36,9 @@ if __name__ == '__main__':
                 print(" Mask Color: ", color_name)
 
                 frame_resized = cv.resize(frame, dim, interpolation=cv.INTER_AREA)
+                cv.imshow('frame resized', frame_resized)
                 frame_bw = proc.apply_mask(frame_resized, hsv_low, hsv_upper)
+                cv.imshow('morph', frame_bw)
                 lego_lst = tracking.find_legos(frame_bw, color_name)
 
                 print("found {} Legos!" .format(len(lego_lst)))
@@ -51,6 +50,7 @@ if __name__ == '__main__':
             print("Can't receive frame (stream end?). Exiting ...")
             break
 
+        cv.waitKey(1)
 
     cap.release()
     cv.destroyAllWindows()
