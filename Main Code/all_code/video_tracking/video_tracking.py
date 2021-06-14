@@ -1,40 +1,56 @@
 import cv2 as cv
 import numpy as np
 from scipy.spatial import distance
+import tracking
+import json
 
 import img_proc as proc
 
 
 if __name__ == '__main__':
 
-    scale_percent = 300
+    scale_percent = 100
 
     cap = cv.VideoCapture("video_tracking_dataset/video_tracking_00.avi")
     ret, frame1 = cap.read()
     dim = proc.calc_resize(frame1, scale_percent)
 
-    dst = distance.euclidean((0, 0, 0), (1, 1, 1))
-    print(dst)
+    # read file
+    with open('colors.json') as json_file:
+        data = json_file.read()
+    # parse file
+    obj = json.loads(data)
 
-    low_orange = (0, 113, 147)
-    upper_orange = (6, 212, 203)
+    #low_hsv = (0, 113, 147)
+    #upper_hsv = (6, 212, 203)
 
     while cap.isOpened():
+
         ret, frame = cap.read()
 
-        # if frame is read correctly ret is True
+        cv.imshow('frame main', frame)
+
         if ret:
-            frame_resized = cv.resize(frame, dim, interpolation=cv.INTER_AREA)
-            frame_bw = proc.apply_mask(frame_resized, low_orange, upper_orange)
+            print("--------- NEW FRAME -----------")
+            for color in obj['colors']:
+                color_name = color['color']
+                hsv_low = np.array(color['hsv_low'], np.uint8)
+                hsv_upper = np.array(color['hsv_upper'], np.uint8)
+                print(" Mask Color: ", color_name)
 
+                frame_resized = cv.resize(frame, dim, interpolation=cv.INTER_AREA)
+                frame_bw = proc.apply_mask(frame_resized, hsv_low, hsv_upper)
+                lego_lst = tracking.find_legos(frame_bw, color_name)
 
+                print("found {} Legos!" .format(len(lego_lst)))
 
-            if cv.waitKey(1) == ord('q'):
-                break
+                #update dict
+                #update each lego in dict
 
         else:
             print("Can't receive frame (stream end?). Exiting ...")
             break
+
 
     cap.release()
     cv.destroyAllWindows()

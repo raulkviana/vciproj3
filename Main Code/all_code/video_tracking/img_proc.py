@@ -16,7 +16,7 @@ def apply_mask(frame, low_hsv, upper_hsv):
 
     frame_hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
     mask = cv.inRange(frame_hsv, low_hsv, upper_hsv)
-    frame_mask = cv.bitwise_and(frame, frame, mask=mask)
+    frame_mask = cv.bitwise_and(frame_hsv, frame_hsv, mask=mask)
     """ convert to gray by using HSV's third channel """
     frame_mask_bw = frame_mask[:,:,2]
 
@@ -24,13 +24,10 @@ def apply_mask(frame, low_hsv, upper_hsv):
     morph = cv.morphologyEx(frame_mask_bw, cv.MORPH_CLOSE, kernel, iterations=10)
     frame_morph_bw = cv.morphologyEx(morph, cv.MORPH_OPEN, kernel, iterations=3)
 
-    cv.imshow('frame morph (Gray)', frame_morph_bw)
-    """
-    DEBUG
-    cv.imshow('mask', mask)
-    cv.imshow('morph', out_morph)
-    cv.imshow('frame', frame)
-    """
+    #DEBUG
+    #cv.imshow('mask', frame_mask)
+    #cv.imshow('morph', frame_morph_bw)
+    #cv.imshow('frame', frame)
     return frame_morph_bw
 
 
