@@ -3,7 +3,7 @@ import numpy as np
 from numpy import load
 import time
 from Constants import constants_feat
-from lego_tracking import lego_tracking
+from lego_tracking import lego_track as Lego
 import sys
 sys.path.insert(0, r'../')
 # in order to read the color json file
@@ -121,28 +121,7 @@ class FeatureExtrac:
 
         return closing, color_piece, mask_3
 
-    def __edge_finding(self, frame, closing, color_piece):
-        """
-        Edge finding function
-        @param [in] frame : input image
-        @param [in] closing : morphological operation
-        @param [in] color_piece : visualize the real part of the target
 
-        @param [out] edge : edge finding for the original image
-        @param [out] edge_color: edge finding in the color piece
-        """
-
-        # Find edges
-        masked_new = cv.bitwise_and(frame, frame, mask=closing)
-        # edge finding for the new image with closing
-        gray = cv.cvtColor(masked_new, cv.COLOR_BGR2GRAY)
-        # edge finding for the original image
-        edge = cv.Canny(gray, 100, 200)
-        # edge finding in the color piece
-        gray_2 = cv.cvtColor(color_piece, cv.COLOR_BGR2GRAY)
-        edge_color = cv.Canny(gray_2, 100, 200)
-
-        return edge, edge_color
 
     def __find_everything(self, closing, frame, color):
         """
@@ -183,18 +162,18 @@ class FeatureExtrac:
                     lego.rect = False
 
                 # Write to image the color of lego
-                cv.putText(frame, color, (x - w, y), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv.LINE_AA)
+                cv.putText(frame, color, (x - w, y), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv.LINE_AA)
 
                 # Write to image the rect or not of lego
-                if not lego.rect:
-                    cv.putText(frame, 'rect', (x - w, y + round(1.5 * h)), cv.FONT_HERSHEY_SIMPLEX, 0.8,
-                               (235, 206, 135), 2, cv.LINE_AA)
-                else:
-                    cv.putText(frame, 'non-rect', (x - w, y + round(1.5 * h)), cv.FONT_HERSHEY_SIMPLEX, 0.8,
-                               (235, 206, 135), 2, cv.LINE_AA)
+                #if not lego.rect:
+                #    cv.putText(frame, 'rect', (x - w, y + round(1.5 * h)), cv.FONT_HERSHEY_SIMPLEX, 0.8,
+                #               (235, 206, 135), 2, cv.LINE_AA)
+                #else:
+                #    cv.putText(frame, 'non-rect', (x - w, y + round(1.5 * h)), cv.FONT_HERSHEY_SIMPLEX, 0.8,
+                #               (235, 206, 135), 2, cv.LINE_AA)
 
                 lego.ratio = self.find_ratio(approx, frame)
-                self.find_middle(approx, frame)
+                #self.find_middle(approx, frame)
 
                 # Add to lego list
                 # if not self.__check_in_list(lego):
@@ -235,9 +214,8 @@ class FeatureExtrac:
         w_h_lst = list(map(round, list(w_h)))
 
         # Write the ratio on image
-        cv.putText(frame_s, str(ratio[0]) + "x" + str(ratio[1]), (x_y_lst[0] + int(w_h_lst[0] / 2), x_y_lst[1]
-                                                                  + int(w_h_lst[1] / 2)), self.font, 0.5, (0, 0, 0), 1,
-                   cv.LINE_AA)
+        #cv.putText(frame_s, str(ratio[0]) + "x" + str(ratio[1]), (x_y_lst[0] + int(w_h_lst[0] / 2), x_y_lst[1]
+        #                                                          + int(w_h_lst[1] / 2)), self.font, 0.5, (0, 0, 0), 1, cv.LINE_AA)
 
         return ratio
 

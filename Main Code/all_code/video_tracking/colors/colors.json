@@ -4,6 +4,12 @@
             "color": "brown",
             "hsv_low": [6, 118, 135],
             "hsv_upper":[15, 208, 221]
+        },
+
+       {
+            "color": "orange",
+            "hsv_low": [0, 147, 135],
+            "hsv_upper":[6, 255, 255]
         }
      ]
  }
