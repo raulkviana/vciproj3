@@ -13,17 +13,17 @@ class Lego:
         Returns the coordinates of the corners
         '''
         if self.rect:
-            x,y,w,h = cv.boundingBox(self.contour)
+            x,y,w,h = cv.boundingRect(self.contour)
             top_right_corner =(x+w,y)
             bottom_left_corner = (x,y+h)
             bottom_right_corner = (x+w,y+h)
             top_left_corner = (x,y)
 
-            corners = {"top_left_corner":top_left_corner, "top_right_corner":top_right_corner,
-                       "bottom_left_corner":bottom_left_corner, "bottom_right_corner":bottom_right_corner}
+            corners = [top_left_corner,top_right_corner,
+                       bottom_left_corner, bottom_right_corner]
 
         else:
-            corners = self.contour
+            corners = self.contour[0]
 
         return corners
 
@@ -34,12 +34,16 @@ class Lego:
         '''
         corners = self.get_corners()
 
-        if(len(corners) == 4):
-            return [(corners["top_left_corner"]+corners["top_right_corner"])/2,
-                (corners["bottom_left_corner"]+corners["bottom_right_corner"])/2]
+        if len(corners) != 0:
+                    x = 0
+                    y = 0
+                    for c in corners:
+                        x = x + c[0]
+                        y = y + c[1]
+
+                    return (x/len(corners),y/len(corners))
         else:
-            for c in corners:
-                c
+            return None
 
 
     def __str__(self):

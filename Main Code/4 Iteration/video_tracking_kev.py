@@ -10,7 +10,7 @@ minDistance = 100 # Pixels
 PredictionDistance = 20 # Pixels
 id_cnt = 0 # Id counter
 FRAMES_TO_SKIP = 100
-DISTANCE_FROM_TOP = 1000
+DISTANCE_FROM_TOP = 100
 resize_amount = 0.15
 
 def calculateDistance(lego1, lego2):
