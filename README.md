@@ -15,7 +15,7 @@ This repository contains all the information used to develop a solution to ident
 
 
 ## Main Pipeline 
-![Our pipeline](/pipelineVCI.png "Pipeline for lego identification")
+![Our pipeline](/pipelineVCI.jpg "Pipeline for lego identification")
 
 ## Some results
 
