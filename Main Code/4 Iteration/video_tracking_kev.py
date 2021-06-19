@@ -13,19 +13,6 @@ FRAMES_TO_SKIP = 100
 DISTANCE_FROM_TOP = 1000
 resize_amount = 0.15
 
-'''
-              {
-            "color": "blue",
-            "hsv_low": [105, 132, 173],
-            "hsv_upper":[114, 255, 255]
-        },
-       {
-            "color": "green",
-            "hsv_low": [60, 167, 127],
-            "hsv_upper":[85, 255, 206]
-        },
-'''
-
 def calculateDistance(lego1, lego2):
     if lego1 != None and lego2 != None:
         lego_center1 = lego1.get_center()

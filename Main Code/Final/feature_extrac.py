@@ -12,62 +12,67 @@ class FeatureExtrac:
     def __init__(self, reference = constants_feat.INPUT_FILE_UNIT_REF):
         npz_stuff = load(reference)
         unit_ref = npz_stuff["unitSize"]
-        self.unitSize = unit_ref
-        self.lst_legos = []
-        self.reset_lst = 0
-        self.font = cv.FONT_HERSHEY_SIMPLEX
+        self.unitSize = unit_ref # Length of 1 of a lego in pixels
+        self.lst_legos = [] # List of legos found
+        self.reset_lst = 0 # Counter to reset list
 
 
-    def get_reference(self, img1, piece_unit_length, outfile_name = constants_feat.INPUT_FILE_UNIT_REF):
+    def get_reference(self, img1, piece_unit_length, outfile_name=constants_feat.INPUT_FILE_UNIT_REF):
         '''
-        :param: [in] piece_unit_length: The length of the piece (e.g., if it is a 2x2, its length is 2).
-        :param: [in] img_reference:: This image must contain only one square lego piece.
-
+        :param: piece_unit_length: The length of the piece (e.g., if it is a 2x2, its length is 2).
+        :param: img1:: This image must contain only one rectangle lego piece.
+        :param: outfile_name: Output file name
         '''
 
-        #img = self.resize(img,constants_feat.RESIZING_FACTOR, constants_feat.RESIZING_FACTOR)  # Resize image
+        # img = self.resize(img,constants_feat.RESIZING_FACTOR, constants_feat.RESIZING_FACTOR)  # Resize image
         img = img1.copy()
-        done = False
-        
-        while not done:
 
-            # Convert to gray
-            gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        # Convert to gray
+        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-            # thresholding after Gaussian filtering
-            blur = cv.GaussianBlur(gray, (5, 5), 0)
-            ret3, th3 = cv.threshold(blur, 127, 255, cv.THRESH_BINARY_INV)
+        # thresholding after Gaussian filtering
+        blur = cv.GaussianBlur(gray, (5, 5), 0)
+        ret3, th3 = cv.threshold(blur, 127, 255, cv.THRESH_BINARY_INV)
 
-            # Close: para obter as formas como deve ser
-            bw = cv.morphologyEx(th3, cv.MORPH_CLOSE, np.ones((10, 10)), iterations=10)
-            #cv.imshow('BW ', bw)
+        # Close: para obter as formas como deve ser
+        bw = cv.morphologyEx(th3, cv.MORPH_CLOSE, np.ones((10, 10)), iterations=10)
+        bw = cv.morphologyEx(bw, cv.MORPH_OPEN, np.ones((10, 10)), iterations=2)
 
-            # Contours
-            contours, hierarchy = cv.findContours(bw, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-            if (len(contours)):
-                done=True
-                epsilon = 0.01 * cv.arcLength(contours[0], True)
-                # Two Approximations
-                approx = cv.approxPolyDP(contours[0], epsilon, True)
+        # cv.imshow('BW ', bw)
 
-                x, y, w, h = cv.boundingRect(approx)
+        # Contours
+        contours, hierarchy = cv.findContours(bw, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        if (len(contours) == 1):
+            done = True
+            epsilon = 0.01 * cv.arcLength(contours[0], True)
+            # Two Approximations
+            approx = cv.approxPolyDP(contours[0], epsilon, True)
 
-                self.unitSize = (min(h, w)) / piece_unit_length
+            x, y, w, h = cv.boundingRect(approx)
 
-                # Print to file
-                print("\nSaving in a file")
-                from tempfile import TemporaryFile
-                outfile = open(outfile_name, 'w')
-                np.savez(outfile_name, unitSize=self.unitSize)  # Dividi por 2 porque a imagem é um 2x2
+            self.unitSize = (min(h, w)) / piece_unit_length
 
-                print("Pixels per unit: ", self.unitSize)
+            # Print to file
+            print("\nSaving in a file")
+            from tempfile import TemporaryFile
+            outfile = open(outfile_name, 'w')
+            np.savez(outfile_name, unitSize=self.unitSize)
 
-                print("Success!")
-            #else:
-            #    raise Exception('Reference wasnt obtained')
+            print("Pixels per unit: ", self.unitSize)
+
+            print("Success!")
+        else:
+            raise Exception('Reference wasnt obtained')
 
 
     def resize(self,img, fx, fy):
+        """
+        :param img: Image to resize
+        :param fx: Amount of resizing in the x axis
+        :param fy: Amount of resizing in the x axis
+        :return: returns image resized
+        """
+
         height, width = img.shape[:2]
         size = (int(width * fx), int(height * fy))
         img = cv.resize(img, size)
@@ -91,6 +96,7 @@ class FeatureExtrac:
         @param [out] closing : morphological operation
         @param [out] color_piece : visualize the real part of the target
         """
+
         #print("hsv_low: ", hsv_low)
         #print("hsv_upper: ", hsv_upper)
 
@@ -148,6 +154,7 @@ class FeatureExtrac:
         """
         @param [in] closing : morphological operation
         @param [in] frame : image copy
+        @param [in] color : Color to identify legos
         """
 
         contours, hierarchy = cv.findContours(closing, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
@@ -205,6 +212,11 @@ class FeatureExtrac:
     '''
 
     def __compute_ratio(self, w, h):
+        """
+        :param w: Width of the lego piece in pixels
+        :param h: Height of the lego piece in pixels
+        :return: Returns the ratio of the lego piece
+        """
 
         width = round(w / (self.unitSize))
         height = round(h / (self.unitSize))
@@ -214,6 +226,8 @@ class FeatureExtrac:
     def __info_about_shape(self,contour):
         '''
         Get info about the bounding box of the shape
+
+        :param contour: Contour of the lego
         '''
 
         epsilon = 0.01 * cv.arcLength(contour, True)
@@ -226,6 +240,11 @@ class FeatureExtrac:
         return x_y, w_h, angle
 
     def find_ratio(self,cont, frame_s):
+        """
+        :param cont: Contour of the lego piece
+        :param frame_s: Frame with the lego
+        :return: Returns the ratio of the lego piece that as the contour "cont" and draws the ratio next to the lego
+        """
         x_y, w_h, angle = self.__info_about_shape(cont)
 
         ratio = self.__compute_ratio(w_h[0], w_h[1])
@@ -234,22 +253,32 @@ class FeatureExtrac:
 
         # Write the ratio on image
         cv.putText(frame_s, str(ratio[0]) + "x" + str(ratio[1]), (x_y_lst[0] + int(w_h_lst[0]/2), x_y_lst[1]
-                   + int(w_h_lst[1]/2)), self.font, 0.5, (0, 0, 0), 1, cv.LINE_AA)
+                   + int(w_h_lst[1]/2)), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv.LINE_AA)
 
         return ratio
 
     def get_lego_real_size(self,lego):
+        """
+        :param lego: Lego object
+        :return: Returns the lego ratio (e.g., 3x3) in cm
+        """
         ratio_real_world = (lego.ratio[0] * constants_feat.REAL_WORLD_LENGTH_LEGO,
                             lego.ratio[1] * constants_feat.REAL_WORLD_LENGTH_LEGO)
 
         return ratio_real_world
 
     def find_middle(self,cont, frame_s):
+        """
+        :param cont: Contour of the lego piece
+        :param frame_s: Frame with the lego
+        :return: Doesnt return, but draws a point in the the center of the lego
+        """
         x_y, w_h, angle = self.__info_about_shape(cont)
         x_y_lst = list(map(round, list(x_y)))
         cv.circle(frame_s, (int(x_y_lst[0]), int(x_y_lst[1]))
                   , 5, (255, 255, 255), -1)
 
+        # Corners
         # x, y, w, h = info_about_shape(cont)
         # print("point:",point)
         # cv.circle(frame_s, (x + w, y), 5, (255, 255, 255), -1)
@@ -258,9 +287,11 @@ class FeatureExtrac:
         # cv.circle(frame_s, (x + w, y + h), 5, (255, 255, 255), -1)
 
     def find_color_ratio(self,img1, json_colors = constants_feat.DEFAULT_COLOR_PATH):
-        '''
-        Find Color and ratio in an image, with a given json file with colors
-        '''
+        """
+        :param img1: Image with lego pieces
+        :param json_colors: Json with the colors to identify lego pieces
+        :return:Find Color and ratio in an image, with a given json file with colors
+        """
 
         #img = self.resize(img1, constants_feat.RESIZING_FACTOR,constants_feat.RESIZING_FACTOR)  # Resize image
         img = img1.copy()
@@ -275,12 +306,16 @@ class FeatureExtrac:
             hsv_low = (f['hsv_low'])
             hsv_upper = (f['hsv_upper'])
 
-            closing, color_piece, mask_3 = self.__imageprocessing(img, hsv_low, hsv_upper)
+            closing, _, _ = self.__imageprocessing(img, hsv_low, hsv_upper)
 
             # Find All lego feautures
             self.__find_everything(closing, img1, hsv_color)
 
     def __check_in_list(self, lego):
+        """
+        :param lego: Lego piece
+        :return: Returns True if the lego is already in the lego list, otherwise False
+        """
         for l in self.lst_legos:
             if l.color == lego.color and l.ratio == lego.ratio and l.rect == lego.rect:
                 return True
