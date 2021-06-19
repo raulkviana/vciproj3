@@ -17,6 +17,9 @@ This repository contains all the information used to develop a solution to ident
 ## Main Pipeline 
 ![Our pipeline](/pipelineVCI.jpg "Pipeline for lego identification")
 
+### Note
+The color thresholding is done through calibrated colors obtained with the region growing algorithm.
+
 ## Some results
 
 | Topic  | Result |
