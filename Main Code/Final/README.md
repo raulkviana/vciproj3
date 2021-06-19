@@ -2,11 +2,11 @@
 
 This folder contains all of the code usefull code we developed
 
-## Folders
+## Relevant files
 
-| Folder  | Description |
+| File  | Description |
 | ------------- |:-------------:|
-| Iteration 1 | Code developed to detect lego pieces and to use trackbars to find the right HSV values|
-| Iteration 2 and 3 | Calibration of the camera, Region Growing first version and identifying the lego ratio (eg, 3x3) |
-| Iteration 4 | Code for Video tracking |
-| Final | Unification and organization of all code developed |
+| App.py | App that identifies legos|
+| calib.py | Class for the calibration of the camera |
+| feature_extract.py | Class to extract lego features |
+| lego.py | Lego class |
