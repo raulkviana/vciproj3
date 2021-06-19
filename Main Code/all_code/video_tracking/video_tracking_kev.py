@@ -6,10 +6,10 @@ from feature_extrac_track import FeatureExtrac as FE
 from lego_tracking import lego_track
 
 
-minDistance = 500 # Pixels
-PredictionDistance = 10 # Pixels
+minDistance = 100 # Pixels
+PredictionDistance = 20 # Pixels
 id_cnt = 0 # Id counter
-FRAMES_TO_SKIP = 300
+FRAMES_TO_SKIP = 100
 DISTANCE_FROM_TOP = 1000
 resize_amount = 0.15
 
@@ -75,14 +75,17 @@ def verify_lego_gone(main_lego_lst, out_lst):
                 out_lst.append(l)
 
 def count_legos(main_lego_lst, out_lst):
-    count = len(main_lego_lst) - 1
-    for l in range(0,count,1):
-            if l>=len(main_lego_lst)-1:
-                break
+
+    num = len(main_lego_lst) - 1
+    while(len(main_lego_lst) != 0):
+        if num == 0:
+            break
+        for l in main_lego_lst:
             # Remover lego caso tenham o mesmo id
-            if check_in_list(main_lego_lst[l],out_lst):
-                    main_lego_lst.pop(l)
-                    count = count - 1
+            if check_in_list(l,out_lst):
+                    main_lego_lst.remove(l)
+            else:
+                num = num - 1
 
 
     return len(main_lego_lst) + len(out_lst)
@@ -110,6 +113,7 @@ if __name__ == '__main__':
     sec_lego_lst = [] # List with legos obtained through feature extraction
     out_lst = [] # List with legos that are out of the image
 
+    # Load video
     cap = cv.VideoCapture("./video_tracking_dataset/edit_dataset2.mp4")
     #ret, frame1 = cap.read()
     # We need to set resolutions.
@@ -149,10 +153,10 @@ if __name__ == '__main__':
                 # Reset secondary list
                 sec_lego_lst.clear()
 
-                if cv.waitKey(1) == ord('q'):
-                    break
+                #if cv.waitKey(1) == ord('q'):
+                #    break
 
-                cv.imshow('Output Window', frame_resized)
+                #cv.imshow('Output Window', frame_resized)
             else:
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
@@ -171,7 +175,10 @@ if __name__ == '__main__':
 
     print('Finished!')
     print('Computing number of legos..')
-    #print('I found ', count_legos(main_lego_lst, out_lst), ' legos!')
+    print('Main lst: ', *tuple(main_lego_lst))
+    print('I found ', count_legos(main_lego_lst, out_lst), ' legos!')
     print('Main lst size: ', len(main_lego_lst))
     print('Out lst size: ', len(out_lst))
     print('Total IDs: ', id_cnt)
+    print('Out lst size: ', *tuple(out_lst))
+

@@ -22,7 +22,7 @@ class FeatureExtrac:
     def get_reference(self, img1, piece_unit_length, outfile_name=constants_feat.INPUT_FILE_UNIT_REF):
         '''
         :param: [in] piece_unit_length: The length of the piece (e.g., if it is a 2x2, its length is 2).
-        :param: [in] img_reference:: This image must contain only one square lego piece.
+        :param: [in] img_reference:: This image must contain only one rectangle lego piece.
 
         '''
 
@@ -162,7 +162,7 @@ class FeatureExtrac:
                     lego.rect = False
 
                 # Write to image the color of lego
-                cv.putText(frame, color, (x - w, y), cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 1, cv.LINE_AA)
+                #cv.putText(frame, color, (x - w, y), cv.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 2, cv.LINE_AA)
 
                 # Write to image the rect or not of lego
                 #if not lego.rect:
