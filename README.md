@@ -21,6 +21,8 @@ In order to install all the requirements to use our application you must run the
 ```
 pip install -r requirements.txt
 ```
+### Note
+This project was developed and tested using Python 3.9.5. So it is recommended using this version of Python in order to avoid compatibility issues.
 
 ## Main Pipeline 
 ![Our pipeline](/pipelineVCI.jpg "Pipeline for lego identification")
