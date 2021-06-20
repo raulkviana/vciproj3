@@ -102,13 +102,13 @@ def main():
     dir_str = '../datasetBox/'
     default_thresh = 50
     """ create an iterator for the dataset """
-    lst_img = glob.glob(dir_str + '*.jpg')
-    img_iter = iter(lst_img)
-    img = read_img(next(img_iter), scale_percent)
+    #lst_img = glob.glob(dir_str + '*.jpg')
+    #img_iter = iter(lst_img)
+    #img = read_img(next(img_iter), scale_percent)
     """ UNCOMMENT LINES ABOVE TO TEST A SPECIFIC IMAGE """
-    #scale_percent = 100
-    #filename = "../dataset2/yellow.png"
-    #img = read_img(filename, scale_percent)
+    scale_percent = 100
+    filename = "../../4 Iteration/video_tracking_dataset/cap4.png"
+    img = read_img(filename, scale_percent)
     height, width, _ = img.shape
     """ DISPLAY DATASET'S FIRST IMAGE """
     cv.imshow('Original', img)

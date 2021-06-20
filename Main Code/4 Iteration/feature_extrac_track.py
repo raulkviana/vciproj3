@@ -168,7 +168,7 @@ class FeatureExtrac:
                     lego.rect = False
 
                 # Write to image the color of lego
-                #cv.putText(frame, color, (x - w, y), cv.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 2, cv.LINE_AA)
+                cv.putText(frame, color, (x - w, y), cv.FONT_HERSHEY_SIMPLEX, 0.3, (0, 255, 0), 2, cv.LINE_AA)
 
                 # Write to image the rect or not of lego
                 #if not lego.rect:
@@ -182,7 +182,7 @@ class FeatureExtrac:
                 #self.find_middle(approx, frame)
 
                 # Add to lego list
-                # if not self.__check_in_list(lego):
+                #if not self.__check_in_list(lego):
                 self.lst_legos.append(lego)
 
     '''
