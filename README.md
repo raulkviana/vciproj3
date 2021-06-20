@@ -5,6 +5,7 @@ This repository contains all the information used to develop a solution to ident
 
 
 ## Index
+* [Install](#install)
 * [Main Pipeline](#mainPipeline)
 * [Some Results](#someResults)
 * [Folders](#folders)
@@ -12,7 +13,14 @@ This repository contains all the information used to develop a solution to ident
 <a name="mainPipeline"/>
 <a name="someResults"/>
 <a name="folders"/>
+<a name="install"/>
 
+
+## Install 
+In order to install all the requirements to use our application you must run the following command on a terminal (in this directory):
+```
+pip install -r requirements.txt
+```
 
 ## Main Pipeline 
 ![Our pipeline](/pipelineVCI.jpg "Pipeline for lego identification")
