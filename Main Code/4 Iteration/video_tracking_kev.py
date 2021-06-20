@@ -6,12 +6,14 @@ from feature_extrac_track import FeatureExtrac as FE
 from lego_tracking import lego_track
 
 
-minDistance = 100 # Pixels
-PredictionDistance = 20 # Pixels
+minDistance = 80 # Pixels
+PredictionDistance = round(minDistance * 0.7) # Pixels # 0.7 funcionou bem
+print("Prediction distance increment: ",PredictionDistance, " pixels")
 id_cnt = 0 # Id counter
-FRAMES_TO_SKIP = 100
+FRAMES_TO_SKIP = 50
 DISTANCE_FROM_TOP = 100
-resize_amount = 0.15
+resize_amount = 0.2
+Output_video_FPS = 10
 
 def calculateDistance(lego1, lego2):
     if lego1 != None and lego2 != None:
@@ -37,7 +39,7 @@ def check_lego_in_main_lst(lego_lst1, main_lego_lst):
 
                             # Calculate distance from lego
                             dist = calculateDistance(l1, l2)
-
+                            #print(dist)
                             # It's the same lego
                             if dist <= minDistance:
                                 l2.contour = l1.contour
@@ -109,7 +111,7 @@ if __name__ == '__main__':
     frame_height = int(cap.get(4))
 
     fourcc = cv.VideoWriter_fourcc(*'MJPG')
-    out = cv.VideoWriter('output.avi', fourcc, 1, (int(frame_width*resize_amount), int(resize_amount*frame_height)))
+    out = cv.VideoWriter('output.avi', fourcc, Output_video_FPS, (int(frame_width*resize_amount), int(resize_amount*frame_height)))
 
     frame_control = FRAMES_TO_SKIP
 
@@ -123,6 +125,7 @@ if __name__ == '__main__':
             if ret:
                 # Resize image
                 frame_resized = fe.resize(frame, resize_amount, resize_amount)
+                #print(frame_resized.shape)
 
                 # Look for legos
                 fe.find_color_ratio(frame_resized)
@@ -140,10 +143,15 @@ if __name__ == '__main__':
                 # Reset secondary list
                 sec_lego_lst.clear()
 
-                #if cv.waitKey(1) == ord('q'):
-                #    break
+                key = cv.waitKey(1)
+                if key == ord('q'):
+                    break
+                elif key == ord('s'):
+                    cv.imshow('Output Window', frame_resized)
+                    cv.waitKey(-1)
 
                 #cv.imshow('Output Window', frame_resized)
+
             else:
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
@@ -162,10 +170,10 @@ if __name__ == '__main__':
 
     print('Finished!')
     print('Computing number of legos..')
-    print('Main lst: ', *tuple(main_lego_lst))
-    print('I found ', count_legos(main_lego_lst, out_lst), ' legos!')
+    #print('Main lst: ', *tuple(main_lego_lst))
     print('Main lst size: ', len(main_lego_lst))
+    print('I found ', count_legos(main_lego_lst, out_lst), ' legos!')
     print('Out lst size: ', len(out_lst))
     print('Total IDs: ', id_cnt)
-    print('Out lst size: ', *tuple(out_lst))
+    #print('Out lst size: ', *tuple(out_lst))
 

@@ -19,6 +19,61 @@
       "color": "green",
       "hsv_low": [60, 167, 127],
       "hsv_upper":[85, 255, 206]
+    },
+    {
+      "color" : "yellow",
+      "hsv_low": [19, 175, 204],
+      "hsv_upper":[25, 244, 255]
+    },
+    {
+      "color" : "grey",
+      "hsv_low": [0, 0, 52],
+      "hsv_upper":[40, 43, 130]
+    },
+    {
+      "color" : "green_light",
+      "hsv_low": [34, 138, 175],
+      "hsv_upper":[38, 249, 237]
+    },
+    {
+      "color" : "purple_light",
+      "hsv_low": [129, 47, 175],
+      "hsv_upper":[144, 86, 255]
+    },
+    {
+      "color" : "yellow3",
+      "hsv_low": [23, 165, 220],
+      "hsv_upper": [28, 250, 255]
+    },
+    {
+      "color" : "red",
+      "hsv_low": [2, 145, 140],
+      "hsv_upper": [5, 229, 254]
+    },
+    {
+      "color" : "blue3",
+      "hsv_low": [102, 51, 180],
+      "hsv_upper": [108, 129, 250]
+    },
+        {
+      "color" : "pink",
+      "hsv_low": [161, 88, 211],
+      "hsv_upper": [169, 172, 255]
+    },
+        {
+      "color" : "pink_light",
+      "hsv_low": [150, 26, 187],
+      "hsv_upper": [172, 81, 255]
+    },
+    {
+      "color" : "grey3",
+      "hsv_low": [2, 145, 140],
+      "hsv_upper": [5, 229, 254]
+    },
+    {
+      "color" : "green9",
+      "hsv_low": [65, 193, 117],
+      "hsv_upper": [74, 255, 178]
     }
   ]
 }

@@ -1,6 +1,6 @@
 import cv2 as cv
 import numpy as np
-from lego_v1 import Lego
+from lego import Lego
 
 class lego_track (Lego):
     def __init__(self,ratio = None ,color= None, contour= None, rect_non_rect = None, id = None):
