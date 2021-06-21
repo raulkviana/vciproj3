@@ -5,10 +5,9 @@ import cv2 as cv
 def calc_resize(frame, scale):
 
     height, width, _ = frame.shape
-    print("height: {}\twidth: {}".format(height, width))
     new_height = int(height * scale / 100)
     new_width = int(width * scale / 100)
-    print("resized height: {}\tresized width: {}".format(new_height, new_width))
+    print("resized width: {}\tresized height: {}".format(new_width, new_height))
     return new_width, new_height
 
 
@@ -21,23 +20,7 @@ def apply_mask(frame, low_hsv, upper_hsv):
     frame_mask_bw = frame_mask[:,:,2]
 
     kernel = np.ones((3, 3), np.uint8)
-    morph = cv.morphologyEx(frame_mask_bw, cv.MORPH_CLOSE, kernel, iterations=10)
-    frame_morph_bw = cv.morphologyEx(morph, cv.MORPH_OPEN, kernel, iterations=3)
+    morph = cv.morphologyEx(frame_mask_bw, cv.MORPH_CLOSE, kernel, iterations=8)
+    frame_morph_bw = cv.morphologyEx(morph, cv.MORPH_OPEN, kernel, iterations=5)
 
-    #DEBUG
-    #cv.imshow('mask', frame_mask)
-    #cv.imshow('morph', frame_morph_bw)
-    #cv.imshow('frame', frame)
     return frame_morph_bw
-
-
-def extract_lego(frame_morph_bw):
-
-    frame_edge = cv.Canny(frame_morph_bw, 100, 200)
-    contours, hierarchy = cv.findContours(frame_edge, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-
-
-
-
-def get_contours(frame_bw):
-    contours = cv.findContours(cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
